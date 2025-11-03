@@ -32,66 +32,78 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
     e.preventDefault();
     if (!input.trim()) return;
 
+    const userInput = input.toLowerCase();
     onSendMessage(input);
+    setInput("");
     
-    // Parse user input and extract preferences (mock logic for demo)
-    if (conversationStep === 0) {
-      // Initial input - extract basic info
-      const hasBeach = input.toLowerCase().includes("beach");
-      const hasBudget = input.match(/\$?([\d,]+)/);
-      const hasDays = input.match(/(\d+)\s*days?/);
-      
-      if (hasBeach && hasBudget && hasDays) {
-        // User provided comprehensive info, ask for details
-        setTimeout(() => {
-          const aiMessage: ChatMessage = {
-            id: (Date.now() + 1).toString(),
-            role: "ai",
-            content: "Wonderful! I'll help you curate an extraordinary beach getaway. What month were you envisioning for your journey? And which city will you be departing from?",
-            timestamp: new Date(),
-          };
-          onAddMessage(aiMessage);
-        }, 800);
-        setConversationStep(1);
-      } else {
-        // Vague input - ask for more details
-        setTimeout(() => {
-          const aiMessage: ChatMessage = {
-            id: (Date.now() + 1).toString(),
-            role: "ai",
-            content: "I'd be delighted to assist with your travel planning! To curate the perfect getaway, I'll need a few details: What's your travel investment range? Duration of your stay? Any preferences for experiences (coastal retreat, cultural immersion, adventure)?",
-            timestamp: new Date(),
-          };
-          onAddMessage(aiMessage);
-        }, 800);
-      }
-    } else if (conversationStep === 1) {
-      // Second input - ready to start
-      setTimeout(() => {
-        const aiMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          role: "ai",
-          content: "Excellent! I'm deploying our specialized AI travel concierge team. They'll analyze over 500 luxury properties, premium routes, and curated experiences to orchestrate your perfect getaway. Your bespoke itinerary will be ready in approximately 90 seconds.",
-          timestamp: new Date(),
-        };
-        onAddMessage(aiMessage);
-        
-        // Trigger planning
-        setTimeout(() => {
-          onStartPlanning({
-            description: "Coastal retreat for discerning travelers",
-            budget: 5000,
-            duration: 7,
-            travelers: 2,
-            departureCity: "NYC",
-            month: "June",
-            interests: ["gastronomy", "wellness"],
-          });
-        }, 1500);
-      }, 800);
+    // Parse user input for preferences
+    const budgetMatch = input.match(/\$?([\d,]+)/);
+    const daysMatch = input.match(/(\d+)\s*days?/);
+    
+    // Check what information we have so far
+    const hasDestinationType = userInput.includes("beach") || userInput.includes("mountain") || 
+                               userInput.includes("city") || userInput.includes("tropical");
+    const hasBudget = budgetMatch || preferences.budget;
+    const hasDuration = daysMatch || preferences.duration;
+    const hasMonth = preferences.month || /\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(userInput);
+    const hasDepartureCity = preferences.departureCity || userInput.includes("from ");
+    
+    // Update preferences based on current input
+    if (budgetMatch && !preferences.budget) {
+      setPreferences(prev => ({ ...prev, budget: parseInt(budgetMatch[1].replace(/,/g, '')) }));
+    }
+    if (daysMatch && !preferences.duration) {
+      setPreferences(prev => ({ ...prev, duration: parseInt(daysMatch[1]) }));
     }
     
-    setInput("");
+    // Always respond with appropriate AI message
+    setTimeout(() => {
+      let aiResponse = "";
+      
+      if (conversationStep === 0) {
+        // First message - ask for more details or proceed
+        if (hasDestinationType && hasBudget && hasDuration) {
+          aiResponse = "Wonderful! To perfect your itinerary, what month are you planning to travel? And which city will you be departing from?";
+          setConversationStep(1);
+        } else if (hasDestinationType || hasBudget || hasDuration) {
+          aiResponse = "Great start! To create your perfect journey, I'll need a few more details. Could you share your budget range, trip duration (in days), and what type of destination appeals to you (beach, mountains, city, etc.)?";
+        } else {
+          aiResponse = "I'm excited to help plan your journey! Tell me about your ideal trip: What's your budget? How many days? What kind of destination interests you?";
+        }
+      } else if (conversationStep === 1) {
+        // Second message - either start planning or ask for final details
+        if (hasBudget && hasDuration && (hasMonth || hasDepartureCity)) {
+          aiResponse = "Perfect! I'm now deploying our multi-agent AI team. Watch in real-time as 5 specialized agents collaborate to curate your ideal itinerary in approximately 90 seconds.";
+          setConversationStep(2);
+          
+          // Start planning after a short delay
+          setTimeout(() => {
+            onStartPlanning({
+              description: `${hasDestinationType ? 'Coastal retreat' : 'Curated journey'} for discerning travelers`,
+              budget: preferences.budget || 5000,
+              duration: preferences.duration || 7,
+              travelers: 2,
+              departureCity: preferences.departureCity || "New York",
+              month: preferences.month || "June",
+              interests: ["gastronomy", "wellness"],
+            });
+          }, 1500);
+        } else {
+          aiResponse = "Excellent details! Just need the departure month and your home city, then we can start orchestrating your perfect getaway.";
+        }
+      } else {
+        // Conversation step 2+ - always be helpful
+        aiResponse = "I'm still working on your itinerary. Our AI agents are analyzing hundreds of options. Your personalized travel plan will be ready shortly!";
+      }
+      
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "ai",
+        content: aiResponse,
+        timestamp: new Date(),
+      };
+      onAddMessage(aiMessage);
+    }, 800);
   };
 
   const handleQuickStart = () => {
