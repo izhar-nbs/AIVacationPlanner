@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Compass, 
@@ -7,11 +8,15 @@ import {
   DollarSign, 
   Check,
   ArrowRight,
-  Activity
+  Activity,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { Agent, InterAgentMessage } from "@shared/schema";
 
 const agentConfigs = [
@@ -63,6 +68,7 @@ interface MultiAgentDashboardProps {
 }
 
 export function MultiAgentDashboard({ agents, messages }: MultiAgentDashboardProps) {
+  const [showAllMessages, setShowAllMessages] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -211,29 +217,86 @@ export function MultiAgentDashboard({ agents, messages }: MultiAgentDashboardPro
             exit={{ opacity: 0, y: -10 }}
             className="mt-6"
           >
-            <Card className="p-4 bg-accent/20 border-accent">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-accent-foreground">
-                  <ArrowRight className="w-4 h-4" />
-                  Agent Communication
+            <Card className="overflow-hidden border-accent">
+              <CardHeader className="pb-3 bg-accent/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-accent-foreground" />
+                    <h3 className="font-semibold text-foreground">
+                      Agent Communication Log
+                    </h3>
+                    <Badge variant="secondary" className="ml-2">
+                      {messages.length} {messages.length === 1 ? "message" : "messages"}
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAllMessages(!showAllMessages)}
+                    data-testid="button-toggle-messages"
+                    className="gap-1"
+                  >
+                    {showAllMessages ? (
+                      <>
+                        <ChevronUp className="w-4 h-4" />
+                        Show Less
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4" />
+                        Show All
+                      </>
+                    )}
+                  </Button>
                 </div>
-                <div className="space-y-1.5">
-                  {messages.slice(-3).map((msg) => (
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {(showAllMessages ? messages : messages.slice(-3)).map((msg, index) => (
                     <motion.div
                       key={msg.id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="text-sm text-muted-foreground flex items-center gap-2"
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover-elevate"
                       data-testid={`message-${msg.from}-to-${msg.to}`}
                     >
-                      <span className="font-medium text-foreground">{msg.from}</span>
-                      <ArrowRight className="w-3 h-3" />
-                      <span className="font-medium text-foreground">{msg.to}:</span>
-                      <span>{msg.message}</span>
+                      <div className="flex-shrink-0 mt-0.5">
+                        <ArrowRight className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-xs">
+                            {msg.from}
+                          </Badge>
+                          <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                          <Badge variant="outline" className="text-xs">
+                            {msg.to}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground ml-auto">
+                            {new Date(msg.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground leading-relaxed">
+                          {msg.message}
+                        </p>
+                      </div>
                     </motion.div>
                   ))}
                 </div>
-              </div>
+                {!showAllMessages && messages.length > 3 && (
+                  <div className="text-center mt-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAllMessages(true)}
+                      className="text-xs underline"
+                    >
+                      + {messages.length - 3} more messages
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
             </Card>
           </motion.div>
         )}

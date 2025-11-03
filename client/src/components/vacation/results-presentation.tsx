@@ -11,7 +11,9 @@ import {
   Users,
   TrendingUp,
   Hotel as HotelIcon,
-  Calendar
+  Calendar,
+  Download,
+  FileText
 } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +26,10 @@ import {
 } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { TripPlan } from "@shared/schema";
+import { generateTripPDF } from "@/lib/pdf-export";
+import { generateCalendarFile } from "@/lib/calendar-export";
+import { useToast } from "@/hooks/use-toast";
+import { MapView } from "./map-view";
 
 interface ResultsPresentationProps {
   plan: TripPlan;
@@ -32,6 +38,39 @@ interface ResultsPresentationProps {
 export function ResultsPresentation({ plan }: ResultsPresentationProps) {
   const [selectedFlight, setSelectedFlight] = useState(plan.flights[0]?.id);
   const [selectedHotel, setSelectedHotel] = useState(plan.hotels[0]?.id);
+  const { toast } = useToast();
+
+  const handlePDFExport = () => {
+    try {
+      generateTripPDF(plan);
+      toast({
+        title: "PDF Downloaded",
+        description: "Your complete itinerary has been saved as a PDF.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "There was an error generating the PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCalendarExport = () => {
+    try {
+      generateCalendarFile(plan);
+      toast({
+        title: "Calendar Downloaded",
+        description: "Your itinerary has been exported as a calendar file.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "There was an error generating the calendar file. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -39,18 +78,42 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center space-y-2"
+        className="text-center space-y-4"
       >
-        <Badge variant="default" className="mb-2">
-          <Check className="w-3 h-3 mr-1" />
-          Plan Complete
-        </Badge>
-        <h2 className="text-3xl font-bold text-foreground">
-          Your Perfect Vacation Plan
-        </h2>
-        <p className="text-muted-foreground">
-          AI-curated itinerary based on 500+ sources
-        </p>
+        <div className="space-y-2">
+          <Badge variant="default" className="mb-2">
+            <Check className="w-3 h-3 mr-1" />
+            Plan Complete
+          </Badge>
+          <h2 className="text-3xl font-bold text-foreground">
+            Your Perfect Vacation Plan
+          </h2>
+          <p className="text-muted-foreground">
+            AI-curated itinerary based on 500+ sources
+          </p>
+        </div>
+        
+        {/* Export Buttons */}
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            variant="outline"
+            onClick={handlePDFExport}
+            data-testid="button-export-pdf"
+            className="gap-2"
+          >
+            <FileText className="w-4 h-4" />
+            Download PDF
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleCalendarExport}
+            data-testid="button-export-calendar"
+            className="gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            Add to Calendar
+          </Button>
+        </div>
       </motion.div>
 
       {/* Destination Card */}
@@ -370,6 +433,15 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
             </div>
           </CardContent>
         </Card>
+      </motion.div>
+
+      {/* Interactive Map */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <MapView plan={plan} />
       </motion.div>
     </div>
   );

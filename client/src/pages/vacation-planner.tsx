@@ -7,6 +7,7 @@ import { ResultsPresentation } from "@/components/vacation/results-presentation"
 import { RefinementControls } from "@/components/vacation/refinement-controls";
 import { CheckoutModal } from "@/components/vacation/checkout-modal";
 import { SuccessConfirmation } from "@/components/vacation/success-confirmation";
+import { ComparisonView } from "@/components/vacation/comparison-view";
 import { AgentSimulation, simulateRefinement } from "@/lib/agent-simulation";
 import { useToast } from "@/hooks/use-toast";
 import type { 
@@ -26,6 +27,8 @@ export default function VacationPlanner() {
     description: "",
   });
   const [tripPlan, setTripPlan] = useState<TripPlan | null>(null);
+  const [previousPlan, setPreviousPlan] = useState<TripPlan | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [agents, setAgents] = useState<Record<string, Agent>>({});
@@ -90,6 +93,8 @@ export default function VacationPlanner() {
   const handleRefinement = async (request: RefinementRequest) => {
     if (!tripPlan) return;
     
+    // Store current plan as previous for comparison
+    setPreviousPlan(tripPlan);
     setIsProcessing(true);
     setPhase("refinement");
     
@@ -101,11 +106,12 @@ export default function VacationPlanner() {
     const updatedPlan = await simulateRefinement(tripPlan, request.type);
     setTripPlan(updatedPlan);
     setPhase("results");
+    setShowComparison(true);
     setIsProcessing(false);
     
     toast({
       title: "Plan Updated!",
-      description: "Your vacation has been optimized based on your request.",
+      description: "Your vacation has been optimized. View the comparison to see changes.",
     });
   };
 
@@ -201,8 +207,30 @@ export default function VacationPlanner() {
                 </motion.div>
               )}
 
+              {/* Comparison View (after refinement) */}
+              {phase === "results" && showComparison && previousPlan && tripPlan && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="space-y-8"
+                >
+                  <ComparisonView oldPlan={previousPlan} newPlan={tripPlan} />
+                  
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => setShowComparison(false)}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      data-testid="button-hide-comparison"
+                    >
+                      View full plan details →
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Results Presentation */}
-              {phase === "results" && tripPlan && (
+              {phase === "results" && tripPlan && !showComparison && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
