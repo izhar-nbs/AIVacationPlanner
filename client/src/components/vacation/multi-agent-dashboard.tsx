@@ -7,9 +7,7 @@ import {
   CalendarDays, 
   DollarSign, 
   Check,
-  ArrowRight,
   Activity,
-  MessageSquare,
   ChevronDown,
   ChevronUp
 } from "lucide-react";
@@ -17,48 +15,54 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Agent, InterAgentMessage } from "@shared/schema";
 
 const agentConfigs = [
   {
     id: "destination-scout",
     name: "Destination Curator",
+    shortName: "Destinations",
     description: "Curating exclusive destinations",
     icon: Compass,
     color: "text-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
   },
   {
     id: "flight-optimizer",
     name: "Flight Concierge",
+    shortName: "Flights",
     description: "Securing premium routes",
     icon: Plane,
     color: "text-purple-600",
-    bgColor: "bg-purple-50 dark:bg-purple-950/30",
   },
   {
     id: "accommodation-finder",
     name: "Hospitality Specialist",
+    shortName: "Hotels",
     description: "Sourcing luxury accommodations",
     icon: Hotel,
     color: "text-green-600",
-    bgColor: "bg-green-50 dark:bg-green-950/30",
   },
   {
     id: "itinerary-architect",
     name: "Experience Designer",
+    shortName: "Itinerary",
     description: "Crafting bespoke experiences",
     icon: CalendarDays,
     color: "text-orange-600",
-    bgColor: "bg-orange-50 dark:bg-orange-950/30",
   },
   {
     id: "budget-guardian",
     name: "Travel Investment Advisor",
+    shortName: "Budget",
     description: "Optimizing travel value",
     icon: DollarSign,
     color: "text-emerald-600",
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
   },
 ];
 
@@ -68,239 +72,214 @@ interface MultiAgentDashboardProps {
 }
 
 export function MultiAgentDashboard({ agents, messages }: MultiAgentDashboardProps) {
-  const [showAllMessages, setShowAllMessages] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
+  
+  const activeAgents = Object.values(agents).filter(a => a.status !== "idle").length;
 
   return (
-    <div className="space-y-6">
-      {/* Section Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center space-y-2"
-      >
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-          <Activity className="w-4 h-4 text-primary animate-pulse" />
-          <span className="text-sm font-medium text-primary">
-            AI Agents Active
-          </span>
+    <TooltipProvider delayDuration={300}>
+      <div className="space-y-4">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Activity className={`w-4 h-4 ${activeAgents > 0 ? "text-primary animate-pulse" : "text-muted-foreground"}`} />
+            <h3 className="text-sm font-semibold text-foreground">
+              AI Agents {activeAgents > 0 && `(${activeAgents}/5)`}
+            </h3>
+          </div>
         </div>
-        <h2 className="text-3xl font-bold text-foreground">
-          Multi-Agent Orchestration
-        </h2>
-        <p className="text-muted-foreground">
-          Watch our 5-member travel concierge team orchestrate your bespoke luxury journey
-        </p>
-      </motion.div>
 
-      {/* Agent Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {agentConfigs.map((config, index) => {
-          const agent = agents[config.id];
-          if (!agent) return null;
+        {/* Compact Agent Rows */}
+        <Card>
+          <CardContent className="p-3 space-y-2">
+            {agentConfigs.map((config, index) => {
+              const agent = agents[config.id];
+              if (!agent) return null;
 
-          const Icon = config.icon;
-          const isComplete = agent.status === "completed";
-          const isWorking = agent.status === "working";
+              const Icon = config.icon;
+              const isComplete = agent.status === "completed";
+              const isWorking = agent.status === "working";
+              const isIdle = agent.status === "idle";
 
-          return (
-            <motion.div
-              key={config.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              data-testid={`card-agent-${config.id}`}
-            >
-              <Card className={`overflow-hidden hover-elevate transition-all ${
-                isComplete ? "border-primary/50" : ""
-              }`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className={`p-3 rounded-lg ${config.bgColor}`}>
-                      <Icon className={`w-6 h-6 ${config.color}`} />
-                    </div>
-                    <AnimatePresence>
-                      {isComplete && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          exit={{ scale: 0 }}
-                          className="flex-shrink-0"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="w-5 h-5 text-primary-foreground" />
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                  <div className="mt-3">
-                    <h3 className="font-semibold text-foreground text-base">
-                      {config.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {config.description}
-                    </p>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-3">
-                  {/* Progress Bar */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-mono font-semibold text-foreground" data-testid={`text-progress-${config.id}`}>
-                        {agent.progress}%
-                      </span>
-                    </div>
-                    <Progress 
-                      value={agent.progress} 
-                      className="h-2"
-                      data-testid={`progress-${config.id}`}
-                    />
-                  </div>
-
-                  {/* Current Status */}
-                  <div className="min-h-[40px]">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={agent.currentTask}
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        className="text-sm text-foreground"
-                        data-testid={`text-status-${config.id}`}
-                      >
-                        {isWorking && (
-                          <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            <span>{agent.currentTask}</span>
-                          </div>
-                        )}
-                        {isComplete && (
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-primary" />
-                            <span className="font-medium">{agent.currentTask}</span>
-                          </div>
-                        )}
-                        {agent.status === "idle" && (
-                          <span className="text-muted-foreground">{agent.currentTask}</span>
-                        )}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Result Badge (when complete) */}
-                  {isComplete && agent.result && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                    >
-                      <Badge variant="secondary" className="w-full justify-center py-1.5">
-                        <Check className="w-3 h-3 mr-1" />
-                        {agent.result}
-                      </Badge>
-                    </motion.div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Inter-Agent Messages */}
-      <AnimatePresence>
-        {messages.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mt-6"
-          >
-            <Card className="overflow-hidden border-accent">
-              <CardHeader className="pb-3 bg-accent/10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-accent-foreground" />
-                    <h3 className="font-semibold text-foreground">
-                      Agent Communication Log
-                    </h3>
-                    <Badge variant="secondary" className="ml-2">
-                      {messages.length} {messages.length === 1 ? "message" : "messages"}
-                    </Badge>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowAllMessages(!showAllMessages)}
-                    data-testid="button-toggle-messages"
-                    className="gap-1"
-                  >
-                    {showAllMessages ? (
-                      <>
-                        <ChevronUp className="w-4 h-4" />
-                        Show Less
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="w-4 h-4" />
-                        Show All
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {(showAllMessages ? messages : messages.slice(-3)).map((msg, index) => (
-                    <motion.div
-                      key={msg.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover-elevate"
-                      data-testid={`message-${msg.from}-to-${msg.to}`}
-                    >
-                      <div className="flex-shrink-0 mt-0.5">
-                        <ArrowRight className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className="text-xs">
-                            {msg.from}
-                          </Badge>
-                          <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                          <Badge variant="outline" className="text-xs">
-                            {msg.to}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground ml-auto">
-                            {new Date(msg.timestamp).toLocaleTimeString()}
+              return (
+                <motion.div
+                  key={config.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  data-testid={`card-agent-${config.id}`}
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className={`p-2 rounded-lg hover-elevate transition-all cursor-help ${
+                        isComplete ? "bg-primary/5 border border-primary/20" : 
+                        isWorking ? "bg-muted/50" : 
+                        "bg-muted/20"
+                      }`}>
+                        {/* Agent Row */}
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <AnimatePresence mode="wait">
+                            {isComplete ? (
+                              <motion.div
+                                key="complete"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                className="flex-shrink-0"
+                              >
+                                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                                  <Check className="w-3 h-3 text-primary-foreground" />
+                                </div>
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="icon"
+                                initial={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                className={`flex-shrink-0 ${config.color}`}
+                              >
+                                <Icon className="w-5 h-5" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                          <span className={`flex-1 text-sm font-medium ${
+                            isIdle ? "text-muted-foreground" : "text-foreground"
+                          }`}>
+                            {config.shortName}
+                          </span>
+                          <span className={`text-xs font-mono font-semibold tabular-nums ${
+                            isComplete ? "text-primary" :
+                            isWorking ? "text-foreground" :
+                            "text-muted-foreground"
+                          }`} data-testid={`text-progress-${config.id}`}>
+                            {agent.progress}%
                           </span>
                         </div>
-                        <p className="text-sm text-foreground leading-relaxed">
-                          {msg.message}
-                        </p>
+
+                        {/* Compact Progress Bar */}
+                        <Progress 
+                          value={agent.progress} 
+                          className="h-1.5"
+                          data-testid={`progress-${config.id}`}
+                        />
+
+                        {/* Status Indicator (only when working) */}
+                        {isWorking && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="flex items-center gap-1.5 mt-1.5"
+                          >
+                            <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                            <span className="text-xs text-muted-foreground truncate" data-testid={`text-status-${config.id}`}>
+                              {agent.currentTask}
+                            </span>
+                          </motion.div>
+                        )}
                       </div>
-                    </motion.div>
-                  ))}
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className={`w-4 h-4 ${config.color}`} />
+                          <span className="font-semibold">{config.name}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {config.description}
+                        </p>
+                        <div className="pt-2 border-t space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Status:</span>
+                            <Badge variant="secondary" className="h-5 text-xs capitalize">
+                              {agent.status}
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Progress:</span>
+                            <span className="font-mono font-semibold">{agent.progress}%</span>
+                          </div>
+                          {agent.currentTask && (
+                            <div className="text-xs mt-2">
+                              <span className="text-muted-foreground">Current task:</span>
+                              <p className="mt-1 text-foreground">{agent.currentTask}</p>
+                            </div>
+                          )}
+                          {isComplete && agent.result && (
+                            <div className="text-xs mt-2">
+                              <span className="text-muted-foreground">Result:</span>
+                              <p className="mt-1 text-primary font-medium">{agent.result}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </motion.div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        {/* Compact Inter-Agent Messages */}
+        {messages.length > 0 && (
+          <Card>
+            <CardHeader className="p-3 pb-2 cursor-pointer" onClick={() => setShowMessages(!showMessages)}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Communications
+                  </span>
+                  <Badge variant="secondary" className="h-5 text-xs">
+                    {messages.length}
+                  </Badge>
                 </div>
-                {!showAllMessages && messages.length > 3 && (
-                  <div className="text-center mt-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowAllMessages(true)}
-                      className="text-xs underline"
-                    >
-                      + {messages.length - 3} more messages
-                    </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMessages(!showMessages);
+                  }}
+                  data-testid="button-toggle-messages"
+                  className="h-6 px-2 text-xs"
+                  aria-expanded={showMessages}
+                  aria-label={showMessages ? "Collapse communications" : "Expand communications"}
+                >
+                  {showMessages ? (
+                    <ChevronUp className="w-3 h-3" />
+                  ) : (
+                    <ChevronDown className="w-3 h-3" />
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+            {showMessages && (
+              <CardContent className="p-3 pt-0 space-y-2 max-h-60 overflow-y-auto">
+                {messages.slice(-5).map((msg) => (
+                  <div
+                    key={msg.id}
+                    className="text-xs p-2 rounded bg-muted/50 space-y-1"
+                    data-testid={`message-${msg.from}-to-${msg.to}`}
+                  >
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Badge variant="outline" className="h-4 px-1 text-[10px]">
+                        {msg.from}
+                      </Badge>
+                      <span>→</span>
+                      <Badge variant="outline" className="h-4 px-1 text-[10px]">
+                        {msg.to}
+                      </Badge>
+                    </div>
+                    <p className="text-foreground leading-snug">
+                      {msg.message}
+                    </p>
                   </div>
-                )}
+                ))}
               </CardContent>
-            </Card>
-          </motion.div>
+            )}
+          </Card>
         )}
-      </AnimatePresence>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
