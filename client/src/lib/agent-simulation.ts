@@ -11,80 +11,80 @@ export type AgentUpdateCallback = (agentId: string, update: Partial<Agent>) => v
 export type MessageCallback = (message: InterAgentMessage) => void;
 export type CompletionCallback = (plan: TripPlan) => void;
 
-// Agent status update sequences
+// Agent status update sequences (optimized for fast demo - completes in ~12 seconds)
 const agentSequences = {
   "destination-scout": [
-    { progress: 15, task: "Analyzing weather patterns...", delay: 3000 },
-    { progress: 35, task: "Scanning travel restrictions...", delay: 4000 },
-    { progress: 55, task: "Comparing 45 destinations...", delay: 5000 },
-    { progress: 75, task: "Evaluating match scores...", delay: 4000 },
-    { progress: 90, task: "Ranking top 3 options...", delay: 3000 },
-    { progress: 100, task: "Top 3 destinations found ✓", delay: 2000, result: "Cancún (96/100)" },
+    { progress: 15, task: "Analyzing weather patterns...", delay: 1200 },
+    { progress: 35, task: "Scanning travel restrictions...", delay: 1600 },
+    { progress: 55, task: "Comparing 45 destinations...", delay: 2000 },
+    { progress: 75, task: "Evaluating match scores...", delay: 1600 },
+    { progress: 90, task: "Ranking top 3 options...", delay: 1200 },
+    { progress: 100, task: "Top 3 destinations found ✓", delay: 800, result: "Cancún (96/100)" },
   ],
   "flight-optimizer": [
-    { progress: 10, task: "Searching JFK flights...", delay: 2000 },
-    { progress: 25, task: "Found 89 flight options...", delay: 4000 },
-    { progress: 45, task: "Analyzing prices and routes...", delay: 5000 },
-    { progress: 65, task: "Checking seat availability...", delay: 4000 },
-    { progress: 85, task: "Optimizing for best value...", delay: 4000 },
-    { progress: 100, task: "Best routes identified ✓", delay: 2000, result: "3 options from $850" },
+    { progress: 10, task: "Searching JFK flights...", delay: 800 },
+    { progress: 25, task: "Found 89 flight options...", delay: 1600 },
+    { progress: 45, task: "Analyzing prices and routes...", delay: 2000 },
+    { progress: 65, task: "Checking seat availability...", delay: 1600 },
+    { progress: 85, task: "Optimizing for best value...", delay: 1600 },
+    { progress: 100, task: "Best routes identified ✓", delay: 800, result: "3 options from $850" },
   ],
   "accommodation-finder": [
-    { progress: 12, task: "Scanning 200+ hotels...", delay: 3000 },
-    { progress: 30, task: "Filtering by amenities...", delay: 4000 },
-    { progress: 50, task: "Analyzing guest reviews...", delay: 5000 },
-    { progress: 70, task: "Comparing room rates...", delay: 4000 },
-    { progress: 88, task: "Evaluating all-inclusive options...", delay: 3000 },
-    { progress: 100, task: "Top hotels selected ✓", delay: 2000, result: "4 properties found" },
+    { progress: 12, task: "Scanning 200+ hotels...", delay: 1200 },
+    { progress: 30, task: "Filtering by amenities...", delay: 1600 },
+    { progress: 50, task: "Analyzing guest reviews...", delay: 2000 },
+    { progress: 70, task: "Comparing room rates...", delay: 1600 },
+    { progress: 88, task: "Evaluating all-inclusive options...", delay: 1200 },
+    { progress: 100, task: "Top hotels selected ✓", delay: 800, result: "4 properties found" },
   ],
   "itinerary-architect": [
-    { progress: 18, task: "Mapping local attractions...", delay: 4000 },
-    { progress: 35, task: "Identifying must-see sites...", delay: 5000 },
-    { progress: 55, task: "Optimizing daily timing...", delay: 5000 },
-    { progress: 75, task: "Balancing activities & rest...", delay: 4000 },
-    { progress: 92, task: "Adding dining experiences...", delay: 3000 },
-    { progress: 100, task: "7-day itinerary complete ✓", delay: 2000, result: "28 activities planned" },
+    { progress: 18, task: "Mapping local attractions...", delay: 1600 },
+    { progress: 35, task: "Identifying must-see sites...", delay: 2000 },
+    { progress: 55, task: "Optimizing daily timing...", delay: 2000 },
+    { progress: 75, task: "Balancing activities & rest...", delay: 1600 },
+    { progress: 92, task: "Adding dining experiences...", delay: 1200 },
+    { progress: 100, task: "7-day itinerary complete ✓", delay: 800, result: "28 activities planned" },
   ],
   "budget-guardian": [
-    { progress: 80, task: "Flight: $1,200 | Hotel: $0 | Activities: $0", delay: 2000 },
-    { progress: 85, task: "Flight: $1,200 | Hotel: $2,450 | Activities: $0", delay: 8000 },
-    { progress: 90, task: "Flight: $1,200 | Hotel: $2,450 | Activities: $670", delay: 6000 },
-    { progress: 95, task: "Optimizing total costs...", delay: 4000 },
-    { progress: 100, task: "Budget optimized ✓", delay: 2000, result: "$4,320 total" },
+    { progress: 80, task: "Flight: $1,200 | Hotel: $0 | Activities: $0", delay: 800 },
+    { progress: 85, task: "Flight: $1,200 | Hotel: $2,450 | Activities: $0", delay: 3200 },
+    { progress: 90, task: "Flight: $1,200 | Hotel: $2,450 | Activities: $670", delay: 2400 },
+    { progress: 95, task: "Optimizing total costs...", delay: 1600 },
+    { progress: 100, task: "Budget optimized ✓", delay: 800, result: "$4,320 total" },
   ],
 };
 
-// Inter-agent messages
+// Inter-agent messages (optimized timing for fast demo)
 const interAgentMessages: Array<{ from: string; to: string; message: string; delay: number }> = [
   { 
     from: "Budget Guardian", 
     to: "Flight Optimizer", 
     message: "Stay under $1,500 for flights", 
-    delay: 8000 
+    delay: 3200 
   },
   { 
     from: "Destination Scout", 
     to: "Accommodation Finder", 
     message: "Focus on beachfront properties in Cancún", 
-    delay: 12000 
+    delay: 4800 
   },
   { 
     from: "Flight Optimizer", 
     to: "Itinerary Architect", 
     message: "Arrival at 12:15 PM on June 15", 
-    delay: 18000 
+    delay: 7200 
   },
   { 
     from: "Budget Guardian", 
     to: "Itinerary Architect", 
     message: "Activity budget: $800 max", 
-    delay: 25000 
+    delay: 10000 
   },
   { 
     from: "Accommodation Finder", 
     to: "Itinerary Architect", 
     message: "Hotel has spa & pool - include in plans", 
-    delay: 32000 
+    delay: 12800 
   },
 ];
 
@@ -217,8 +217,8 @@ export async function simulateRefinement(
   currentPlan: TripPlan,
   refinementType: string
 ): Promise<TripPlan> {
-  // Simulate processing delay
-  await new Promise(resolve => setTimeout(resolve, 8000));
+  // Simulate processing delay (optimized for fast demo)
+  await new Promise(resolve => setTimeout(resolve, 3000));
 
   const newPlan = { ...currentPlan };
 
