@@ -48,7 +48,7 @@ export function SuccessConfirmation({ tripPlan }: SuccessConfirmationProps) {
             transition={{ delay: 0.4 }}
             className="text-xl text-muted-foreground"
           >
-            Your dream vacation is confirmed
+            Your luxury journey is confirmed and secured
           </motion.p>
         </div>
 
@@ -207,7 +207,7 @@ export function SuccessConfirmation({ tripPlan }: SuccessConfirmationProps) {
           </span>
         </div>
         <p className="text-sm text-muted-foreground">
-          Have questions? Contact our support team at support@aivacationplanner.com
+          Questions about your journey? Contact our concierge team at concierge@northbay.travel
         </p>
       </motion.div>
     </div>

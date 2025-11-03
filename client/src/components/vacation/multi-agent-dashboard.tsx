@@ -88,7 +88,7 @@ export function MultiAgentDashboard({ agents, messages }: MultiAgentDashboardPro
           Multi-Agent Orchestration
         </h2>
         <p className="text-muted-foreground">
-          Watch 5 specialized AI agents work in parallel to plan your perfect vacation
+          Watch our 5-member travel concierge team orchestrate your bespoke luxury journey
         </p>
       </motion.div>
 

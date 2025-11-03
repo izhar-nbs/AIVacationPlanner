@@ -32,10 +32,10 @@ export function ComparisonView({ oldPlan, newPlan }: ComparisonViewProps) {
         className="text-center space-y-2"
       >
         <h2 className="text-2xl font-bold text-foreground">
-          Plan Comparison
+          Itinerary Comparison
         </h2>
         <p className="text-muted-foreground">
-          See how your vacation plan has been optimized
+          Review how your luxury journey has been enhanced
         </p>
       </motion.div>
 
@@ -107,15 +107,15 @@ export function ComparisonView({ oldPlan, newPlan }: ComparisonViewProps) {
                 </div>
               </div>
 
-              {/* Activities */}
+              {/* Experiences */}
               <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                 <Calendar className="w-4 h-4 text-muted-foreground mt-1" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">
-                    Activities
+                    Curated Experiences
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {oldPlan.itinerary.days.reduce((sum, day) => sum + day.activities.length, 0)} activities planned
+                    {oldPlan.itinerary.days.reduce((sum, day) => sum + day.activities.length, 0)} experiences curated
                   </p>
                 </div>
               </div>
@@ -239,15 +239,15 @@ export function ComparisonView({ oldPlan, newPlan }: ComparisonViewProps) {
                 </div>
               </div>
 
-              {/* Activities */}
+              {/* Experiences */}
               <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
                 <Calendar className="w-4 h-4 text-primary mt-1" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">
-                    Activities
+                    Curated Experiences
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {newPlan.itinerary.days.reduce((sum, day) => sum + day.activities.length, 0)} activities planned
+                    {newPlan.itinerary.days.reduce((sum, day) => sum + day.activities.length, 0)} experiences curated
                   </p>
                 </div>
               </div>

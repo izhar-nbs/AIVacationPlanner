@@ -86,10 +86,10 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
             Plan Complete
           </Badge>
           <h2 className="text-3xl font-bold text-foreground">
-            Your Perfect Vacation Plan
+            Your Curated Luxury Itinerary
           </h2>
           <p className="text-muted-foreground">
-            AI-curated itinerary based on 500+ sources
+            Bespoke travel experience orchestrated from 500+ premium sources
           </p>
         </div>
         
@@ -421,13 +421,13 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
                   <span className="font-semibold text-foreground">
                     {plan.itinerary.pacing.activities}%
                   </span>
-                  <span className="text-muted-foreground ml-1">Activities</span>
+                  <span className="text-muted-foreground ml-1">Experiences</span>
                 </div>
                 <div className="text-sm">
                   <span className="font-semibold text-foreground">
                     {plan.itinerary.pacing.relaxation}%
                   </span>
-                  <span className="text-muted-foreground ml-1">Relaxation</span>
+                  <span className="text-muted-foreground ml-1">Wellness</span>
                 </div>
               </div>
             </div>

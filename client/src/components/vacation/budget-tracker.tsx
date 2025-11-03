@@ -55,9 +55,9 @@ export function BudgetTracker({ budget }: BudgetTrackerProps) {
 
   const chartData = [
     { name: "Flights", value: budget.breakdown.flights, color: "#3b82f6" },
-    { name: "Hotels", value: budget.breakdown.accommodation, color: "#8b5cf6" },
-    { name: "Activities", value: budget.breakdown.activities, color: "#10b981" },
-    { name: "Food", value: budget.breakdown.food, color: "#f59e0b" },
+    { name: "Accommodations", value: budget.breakdown.accommodation, color: "#8b5cf6" },
+    { name: "Experiences", value: budget.breakdown.activities, color: "#10b981" },
+    { name: "Dining", value: budget.breakdown.food, color: "#f59e0b" },
     { name: "Transport", value: budget.breakdown.transport, color: "#ef4444" },
   ];
 
