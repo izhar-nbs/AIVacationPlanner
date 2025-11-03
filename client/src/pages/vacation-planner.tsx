@@ -182,8 +182,8 @@ export default function VacationPlanner() {
         setAgentMessages(prev => [...prev, message]);
       },
       async (plan) => {
-        // Apply refinement to the generated plan
-        const refinedPlan = await simulateRefinement(tripPlan, request.type);
+        // Apply refinement to the newly generated plan
+        const refinedPlan = await simulateRefinement(plan, request.type);
         setTripPlan(refinedPlan);
         setPhase("results");
         setShowComparison(true);
