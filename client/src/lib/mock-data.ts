@@ -11,6 +11,7 @@ export const destinations: Destination[] = [
     description: "Paradise beaches meet vibrant culture in this Caribbean gem. Perfect for couples seeking relaxation with world-class dining.",
     climate: "Tropical, 82°F average",
     bestMonth: "June",
+    coordinates: { lat: 21.1619, lng: -86.8515 },
     reasons: [
       "Perfect weather in June with minimal rain (28 days of sunshine)",
       "All-inclusive resorts offer exceptional value for couples",
@@ -32,6 +33,7 @@ export const destinations: Destination[] = [
     description: "Tropical paradise with stunning temples, rice terraces, and incredible food culture.",
     climate: "Tropical, 80°F average",
     bestMonth: "June-August",
+    coordinates: { lat: -8.3405, lng: 115.0920 },
     reasons: [
       "Incredible food scene with fresh seafood and traditional Balinese cuisine",
       "Perfect balance of beach relaxation and cultural experiences",
@@ -49,6 +51,7 @@ export const destinations: Destination[] = [
     description: "Iconic white-washed villages perched on cliffs with breathtaking sunset views.",
     climate: "Mediterranean, 78°F average",
     bestMonth: "May-October",
+    coordinates: { lat: 36.3932, lng: 25.4615 },
     reasons: [
       "World-famous sunsets and romantic atmosphere",
       "Exceptional Greek cuisine and local wines",
@@ -118,6 +121,7 @@ export const hotels: Hotel[] = [
     aiReasoning: "Adults-only all-inclusive resort perfect for couples. Includes all meals, drinks, and activities. Great value compared to paying separately for dining.",
     location: "Hotel Zone, Beachfront",
     type: "Resort",
+    coordinates: { lat: 21.1450, lng: -86.8253 },
   },
   {
     id: "ritz-carlton",

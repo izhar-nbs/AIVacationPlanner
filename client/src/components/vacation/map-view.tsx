@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { motion, AnimatePresence } from "framer-motion";
 import { Map as MapIcon, ChevronDown, ChevronUp, MapPin, Hotel as HotelIcon, Activity } from "lucide-react";
@@ -17,15 +17,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Destination coordinates (hardcoded for demo)
-const DESTINATION_COORDS: Record<string, [number, number]> = {
-  "cancun": [21.1619, -86.8515],
-  "bali": [-8.3405, 115.0920],
-  "santorini": [36.3932, 25.4615],
-  "maldives": [3.2028, 73.2207],
-  "tulum": [20.2114, -87.4654],
-};
-
 interface MapViewProps {
   plan: TripPlan;
 }
@@ -33,8 +24,11 @@ interface MapViewProps {
 export function MapView({ plan }: MapViewProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   
-  // Get destination coordinates
-  const coords = DESTINATION_COORDS[plan.destination.id] || [0, 0];
+  // Get destination coordinates from plan data
+  const destinationCoords: [number, number] = [
+    plan.destination.coordinates.lat,
+    plan.destination.coordinates.lng
+  ];
   
   // Create custom icons
   const hotelIcon = new L.Icon({
@@ -55,12 +49,69 @@ export function MapView({ plan }: MapViewProps) {
     shadowSize: [41, 41]
   });
 
-  // Sample activity locations (slightly offset from main destination)
-  const activityLocations = [
-    { name: "Beach Activities", lat: coords[0] + 0.02, lng: coords[1] - 0.02 },
-    { name: "City Center", lat: coords[0] - 0.01, lng: coords[1] + 0.01 },
-    { name: "Historic Sites", lat: coords[0] + 0.01, lng: coords[1] + 0.02 },
-  ];
+  // Extract hotel coordinates or use slight offset from destination
+  const hotelCoords: [number, number] | null = useMemo(() => {
+    if (plan.selectedHotel?.coordinates) {
+      return [plan.selectedHotel.coordinates.lat, plan.selectedHotel.coordinates.lng];
+    }
+    // Fallback: slight offset from destination
+    return [destinationCoords[0] + 0.005, destinationCoords[1] - 0.005];
+  }, [plan.selectedHotel, destinationCoords]);
+
+  // Extract activity locations from itinerary
+  const activityLocations = useMemo(() => {
+    const locations: Array<{
+      name: string;
+      lat: number;
+      lng: number;
+      category: string;
+    }> = [];
+
+    // Collect unique activities with coordinates
+    const seen = new Set<string>();
+    
+    plan.itinerary.days.forEach(day => {
+      day.activities.forEach(activity => {
+        // Skip transport and dining activities
+        if (activity.category === "transport" || activity.category === "dining") {
+          return;
+        }
+
+        if (activity.coordinates) {
+          const key = `${activity.coordinates.lat}-${activity.coordinates.lng}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            locations.push({
+              name: activity.name,
+              lat: activity.coordinates.lat,
+              lng: activity.coordinates.lng,
+              category: activity.category
+            });
+          }
+        }
+      });
+    });
+
+    // If no activities have coordinates, generate some sample points around destination
+    if (locations.length === 0) {
+      const offsets = [
+        { lat: 0.02, lng: -0.02, name: "Beach Activities", category: "relaxation" },
+        { lat: -0.01, lng: 0.01, name: "City Center", category: "culture" },
+        { lat: 0.01, lng: 0.02, name: "Historic Sites", category: "culture" },
+      ];
+      
+      offsets.forEach(offset => {
+        locations.push({
+          name: offset.name,
+          lat: destinationCoords[0] + offset.lat,
+          lng: destinationCoords[1] + offset.lng,
+          category: offset.category
+        });
+      });
+    }
+
+    return locations;
+  }, [plan.itinerary, destinationCoords]);
 
   return (
     <Card className="overflow-hidden" data-testid="card-map">
@@ -108,7 +159,7 @@ export function MapView({ plan }: MapViewProps) {
             <CardContent className="p-0">
               <div className="h-[400px] w-full relative">
                 <MapContainer
-                  center={coords}
+                  center={destinationCoords}
                   zoom={12}
                   style={{ height: "100%", width: "100%" }}
                   scrollWheelZoom={false}
@@ -119,7 +170,7 @@ export function MapView({ plan }: MapViewProps) {
                   />
                   
                   {/* Main destination marker */}
-                  <Marker position={coords}>
+                  <Marker position={destinationCoords}>
                     <Popup>
                       <div className="text-center">
                         <p className="font-semibold text-sm">{plan.destination.name}</p>
@@ -129,8 +180,8 @@ export function MapView({ plan }: MapViewProps) {
                   </Marker>
 
                   {/* Hotel marker */}
-                  {plan.selectedHotel && (
-                    <Marker position={[coords[0] + 0.005, coords[1] - 0.005]} icon={hotelIcon}>
+                  {hotelCoords && plan.selectedHotel && (
+                    <Marker position={hotelCoords} icon={hotelIcon}>
                       <Popup>
                         <div>
                           <p className="font-semibold text-sm flex items-center gap-1">
@@ -148,7 +199,7 @@ export function MapView({ plan }: MapViewProps) {
                   {/* Activity markers */}
                   {activityLocations.map((location, index) => (
                     <Marker 
-                      key={index}
+                      key={`${location.lat}-${location.lng}-${index}`}
                       position={[location.lat, location.lng]} 
                       icon={activityIcon}
                     >
@@ -158,8 +209,8 @@ export function MapView({ plan }: MapViewProps) {
                             <Activity className="w-3 h-3" />
                             {location.name}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            Point of Interest
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {location.category}
                           </p>
                         </div>
                       </Popup>
@@ -181,7 +232,9 @@ export function MapView({ plan }: MapViewProps) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Activity className="w-4 h-4 text-green-600" />
-                    <span className="text-muted-foreground">Activities</span>
+                    <span className="text-muted-foreground">
+                      Activities ({activityLocations.length})
+                    </span>
                   </div>
                 </div>
               </div>

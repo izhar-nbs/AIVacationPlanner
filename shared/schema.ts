@@ -40,6 +40,10 @@ export interface Destination {
   reasons: string[];
   climate: string;
   bestMonth: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
   alternatives?: {
     name: string;
     priceDiff: number;
@@ -77,6 +81,10 @@ export interface Hotel {
   aiReasoning: string;
   location: string;
   type: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
 }
 
 // Activity Types
@@ -88,6 +96,10 @@ export interface Activity {
   cost: number;
   duration: string;
   category: "relaxation" | "adventure" | "culture" | "dining" | "transport";
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
 }
 
 // Itinerary Types

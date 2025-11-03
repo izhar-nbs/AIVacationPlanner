@@ -132,3 +132,90 @@ Note: While database tooling is configured (drizzle.config.ts, schema imports), 
 - **@replit/vite-plugin-dev-banner**: Development environment banner
 
 These plugins are conditionally loaded only in development mode on Replit environment.
+
+## Recent Features (November 2025)
+
+### PDF Export
+- **Library**: jspdf for client-side PDF generation
+- **Location**: `client/src/lib/pdf-export.ts`
+- **Integration**: Download PDF button in ResultsPresentation header
+- **Functionality**: Generates professional PDF with complete trip plan including destination details, flight information, hotel booking, and full 7-day itinerary with activities
+- **User Experience**: One-click download with toast notification
+
+### Calendar Export (.ics)
+- **Library**: ics for RFC 5545 compliant calendar file generation
+- **Location**: `client/src/lib/calendar-export.ts`
+- **Integration**: Add to Calendar button in ResultsPresentation header
+- **Functionality**: Converts all itinerary activities into calendar events with proper dates, times, locations, and descriptions
+- **Compatibility**: Works with Google Calendar, Outlook, Apple Calendar, and other standard calendar applications
+
+### Interactive Map
+- **Library**: Leaflet (react-leaflet v4.2.1) - free, no API key required
+- **Location**: `client/src/components/vacation/map-view.tsx`
+- **Integration**: Expandable/collapsible card in ResultsPresentation
+- **Schema Changes**: Extended Destination (required coordinates), Hotel (optional coordinates), Activity (optional coordinates) with lat/lng properties
+- **Mock Data**: Updated destinations and hotels with real geographic coordinates
+- **Features**:
+  - Blue markers for destination center
+  - Red markers for selected hotel
+  - Green markers for activity locations
+  - Interactive popups with location details
+  - Legend showing marker types and counts
+  - Graceful fallbacks when coordinates missing (generates offset markers)
+  - OpenStreetMap tiles (free, no attribution required beyond standard OSM credit)
+
+### Enhanced Agent Communication
+- **Location**: `client/src/components/vacation/multi-agent-dashboard.tsx`
+- **Integration**: Expandable "Agent Communications" panel in multi-agent dashboard
+- **Features**:
+  - Chronological display of inter-agent messages
+  - Sender/receiver badges with color coding
+  - Message timestamps
+  - Expandable thread (shows first 3, can expand to see all)
+  - Animated message appearance with stagger effect
+  - Real-time updates as agents communicate during processing
+
+### Comparison View
+- **Location**: `client/src/components/vacation/comparison-view.tsx`
+- **Integration**: Displayed during refinement phase when user modifies plan
+- **Features**:
+  - Side-by-side layout showing "Current Plan" vs "New Plan"
+  - Price comparison with delta highlighting (green for savings, red for increases)
+  - Key changes section with bullet points
+  - Visual diff for destination, flight, hotel changes
+  - Seamless transition animations
+
+### Schema Extensions
+
+**Coordinates Support**: To enable the interactive map feature, the following schema updates were made in `shared/schema.ts`:
+
+```typescript
+// Destination now requires coordinates
+export interface Destination {
+  // ... existing fields
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+}
+
+// Hotel can optionally include coordinates
+export interface Hotel {
+  // ... existing fields
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
+
+// Activities can optionally include coordinates
+export interface Activity {
+  // ... existing fields
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
+```
+
+**Design Principle**: Coordinates are required for destinations (as the main trip anchor point) but optional for hotels and activities to allow flexibility in mock data and future data ingestion. The MapView component includes intelligent fallbacks that generate offset coordinates when hotel/activity coordinates are missing.
