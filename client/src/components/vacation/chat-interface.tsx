@@ -96,19 +96,19 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
 
   const handleQuickStart = () => {
     const quickPrefs: VacationPreferences = {
-      description: "Beach vacation, relaxation and food, 7 days for a couple",
+      description: "Luxury coastal retreat with focus on wellness and fine dining, 7-day journey for discerning couple",
       budget: 5000,
       duration: 7,
       travelers: 2,
       departureCity: "New York",
       month: "June",
-      interests: ["food", "relaxation", "beach"],
+      interests: ["gastronomy", "wellness", "beachfront"],
     };
     
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
-      content: "Beach vacation, $5,000, 7 days, couple",
+      content: "Coastal retreat, $5,000 investment, 7-day journey for two",
       timestamp: new Date(),
     };
     onAddMessage(userMsg);
@@ -118,7 +118,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
       const userMsg2: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "user",
-        content: "June, departing from NYC, interested in food and relaxation",
+        content: "June departure from New York, focus on wellness and exceptional gastronomy",
         timestamp: new Date(),
       };
       onAddMessage(userMsg2);
@@ -227,7 +227,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Example: Beach vacation, $5,000 budget, 7 days for a couple..."
+              placeholder="Example: Coastal retreat, $5,000 travel investment, 7-day journey for two discerning travelers..."
               className="min-h-[120px] pr-12 resize-none text-base"
               data-testid="input-vacation-description"
             />
@@ -248,18 +248,18 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
               <Badge
                 variant="secondary"
                 className="cursor-pointer hover-elevate"
-                onClick={() => setInput("Beach vacation in the Caribbean")}
+                onClick={() => setInput("Luxury Caribbean coastal retreat")}
                 data-testid="badge-example-beach"
               >
-                Beach getaway
+                Caribbean escape
               </Badge>
               <Badge
                 variant="secondary"
                 className="cursor-pointer hover-elevate"
-                onClick={() => setInput("European adventure, culture and food")}
+                onClick={() => setInput("European cultural journey with gastronomy focus")}
                 data-testid="badge-example-europe"
               >
-                European tour
+                European expedition
               </Badge>
             </div>
             
@@ -281,18 +281,18 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
         {[
           {
             icon: Users,
-            title: "5 AI Agents",
-            description: "Working in parallel to find the best options",
+            title: "5 Travel Specialists",
+            description: "Parallel AI concierge team orchestrating your perfect journey",
           },
           {
             icon: Zap,
-            title: "Real-Time Updates",
-            description: "Watch agents communicate and optimize",
+            title: "Live Orchestration",
+            description: "Witness real-time collaboration and route optimization",
           },
           {
             icon: Lightbulb,
-            title: "Explainable AI",
-            description: "Every recommendation comes with reasoning",
+            title: "Transparent Curation",
+            description: "Every selection backed by expert reasoning and insights",
           },
         ].map((feature, index) => {
           const IconComponent = feature.icon;

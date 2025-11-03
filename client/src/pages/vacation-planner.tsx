@@ -131,11 +131,13 @@ export default function VacationPlanner() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                AI Vacation Planner
+              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <span className="text-primary">NorthBay</span>
+                <span className="text-muted-foreground font-normal text-lg">|</span>
+                <span>AI Travel Concierge</span>
               </h1>
               <p className="text-sm text-muted-foreground">
-                Transform 15 hours of research into 5 minutes
+                Luxury journeys orchestrated in 90 seconds
               </p>
             </div>
             {phase !== "input" && (
@@ -145,10 +147,10 @@ export default function VacationPlanner() {
                 className="text-right"
               >
                 <div className="text-sm font-medium text-primary">
-                  {phase === "processing" && "Agents Working..."}
-                  {phase === "results" && "Plan Ready"}
-                  {phase === "refinement" && "Recalculating..."}
-                  {phase === "confirmation" && "Booked!"}
+                  {phase === "processing" && "Concierge Team Active..."}
+                  {phase === "results" && "Itinerary Curated"}
+                  {phase === "refinement" && "Refining Journey..."}
+                  {phase === "confirmation" && "Reservation Confirmed"}
                 </div>
               </motion.div>
             )}
