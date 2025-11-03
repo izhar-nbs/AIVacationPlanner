@@ -63,8 +63,8 @@ export default function VacationPlanner() {
     setIsProcessing(true);
     
     toast({
-      title: "AI Agents Activated",
-      description: "5 specialized agents are now analyzing 500+ sources to plan your perfect vacation.",
+      title: "Travel Concierge Team Deployed",
+      description: "Our 5 specialized AI agents are now analyzing 500+ luxury properties and experiences to curate your perfect getaway.",
     });
 
     // Run agent simulation
@@ -83,8 +83,8 @@ export default function VacationPlanner() {
         setPhase("results");
         setIsProcessing(false);
         toast({
-          title: "Plan Complete!",
-          description: `Your perfect ${plan.destination.name} vacation is ready for review.`,
+          title: "Itinerary Curated!",
+          description: `Your bespoke ${plan.destination.name} getaway is ready for review.`,
         });
       }
     );
@@ -99,8 +99,8 @@ export default function VacationPlanner() {
     setPhase("refinement");
     
     toast({
-      title: "Recalculating...",
-      description: "AI agents are updating your plan based on your preferences.",
+      title: "Recalibrating Journey...",
+      description: "Our concierge team is refining your itinerary based on your preferences.",
     });
 
     const updatedPlan = await simulateRefinement(tripPlan, request.type);
@@ -110,8 +110,8 @@ export default function VacationPlanner() {
     setIsProcessing(false);
     
     toast({
-      title: "Plan Updated!",
-      description: "Your vacation has been optimized. View the comparison to see changes.",
+      title: "Itinerary Refined!",
+      description: "Your journey has been optimized. Review the enhanced experience below.",
     });
   };
 

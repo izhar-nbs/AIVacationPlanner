@@ -47,7 +47,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
           const aiMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
             role: "ai",
-            content: "Perfect! I can help you plan an amazing beach vacation. What month are you thinking? And which city will you be departing from?",
+            content: "Wonderful! I'll help you curate an extraordinary beach getaway. What month were you envisioning for your journey? And which city will you be departing from?",
             timestamp: new Date(),
           };
           onAddMessage(aiMessage);
@@ -59,7 +59,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
           const aiMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
             role: "ai",
-            content: "I'd love to help! To find your perfect vacation, could you tell me: What's your budget? How many days? Any preferences (beach, adventure, culture)?",
+            content: "I'd be delighted to assist with your travel planning! To curate the perfect getaway, I'll need a few details: What's your travel investment range? Duration of your stay? Any preferences for experiences (coastal retreat, cultural immersion, adventure)?",
             timestamp: new Date(),
           };
           onAddMessage(aiMessage);
@@ -71,7 +71,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
         const aiMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: "ai",
-          content: "Excellent! I'm activating my AI agents now. They'll analyze 500+ sources to create your perfect vacation plan. This will take about 2-3 minutes.",
+          content: "Excellent! I'm deploying our specialized AI travel concierge team. They'll analyze over 500 luxury properties, premium routes, and curated experiences to orchestrate your perfect getaway. Your bespoke itinerary will be ready in approximately 90 seconds.",
           timestamp: new Date(),
         };
         onAddMessage(aiMessage);
@@ -79,13 +79,13 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
         // Trigger planning
         setTimeout(() => {
           onStartPlanning({
-            description: "Beach vacation for couple",
+            description: "Coastal retreat for discerning travelers",
             budget: 5000,
             duration: 7,
             travelers: 2,
             departureCity: "NYC",
             month: "June",
-            interests: ["food", "relaxation"],
+            interests: ["gastronomy", "wellness"],
           });
         }, 1500);
       }, 800);
@@ -128,7 +128,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
         const aiMsg: ChatMessage = {
           id: (Date.now() + 2).toString(),
           role: "ai",
-          content: "Perfect! I'm activating my 5 AI agents now to plan your dream vacation. Watch them work in real-time!",
+          content: "Wonderful! Deploying our travel concierge team now. Watch as five specialized AI agents orchestrate your luxury getaway in real-time!",
           timestamp: new Date(),
         };
         onAddMessage(aiMsg);
@@ -151,25 +151,25 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
           <Sparkles className="w-4 h-4 text-primary" />
           <span className="text-sm font-medium text-primary">
-            AI-Powered Vacation Planning
+            NorthBay AI Travel Concierge
           </span>
         </div>
         <h2 className="text-4xl md:text-5xl font-bold text-foreground">
-          Describe Your Dream Vacation
+          Your Perfect Getaway, Orchestrated by AI
         </h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Tell me what you're looking for, and I'll have 5 AI agents plan every detail
-          in minutes, not hours.
+          Describe your ideal journey, and watch our AI concierge team curate every detail -
+          from exclusive destinations to bespoke experiences.
         </p>
         <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span>15 hours → 5 minutes</span>
+            <span>15 hours of research → 90 seconds</span>
           </div>
           <div className="w-1 h-1 rounded-full bg-border" />
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-accent-foreground" />
-            <span>500+ sources analyzed</span>
+            <div className="w-2 h-2 rounded-full bg-accent" />
+            <span>500+ luxury properties vetted</span>
           </div>
         </div>
       </motion.div>
