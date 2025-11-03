@@ -33,7 +33,58 @@ export default function VacationPlanner() {
   const [showComparison, setShowComparison] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [agents, setAgents] = useState<Record<string, Agent>>({});
+  const [agents, setAgents] = useState<Record<string, Agent>>({
+    "destination-scout": {
+      id: "destination-scout",
+      name: "Destination Curator",
+      description: "Curating exclusive destinations",
+      icon: "Compass",
+      progress: 0,
+      status: "idle",
+      currentTask: "Awaiting deployment...",
+      updates: []
+    },
+    "flight-optimizer": {
+      id: "flight-optimizer",
+      name: "Flight Concierge",
+      description: "Securing premium routes",
+      icon: "Plane",
+      progress: 0,
+      status: "idle",
+      currentTask: "Awaiting deployment...",
+      updates: []
+    },
+    "accommodation-finder": {
+      id: "accommodation-finder",
+      name: "Hospitality Specialist",
+      description: "Sourcing luxury accommodations",
+      icon: "Hotel",
+      progress: 0,
+      status: "idle",
+      currentTask: "Awaiting deployment...",
+      updates: []
+    },
+    "itinerary-architect": {
+      id: "itinerary-architect",
+      name: "Experience Designer",
+      description: "Crafting bespoke experiences",
+      icon: "CalendarDays",
+      progress: 0,
+      status: "idle",
+      currentTask: "Awaiting deployment...",
+      updates: []
+    },
+    "budget-guardian": {
+      id: "budget-guardian",
+      name: "Travel Investment Advisor",
+      description: "Optimizing travel value",
+      icon: "DollarSign",
+      progress: 0,
+      status: "idle",
+      currentTask: "Awaiting deployment...",
+      updates: []
+    }
+  });
   const [agentMessages, setAgentMessages] = useState<InterAgentMessage[]>([]);
   const simulationRef = useRef<AgentSimulation | null>(null);
   const { toast } = useToast();
@@ -100,21 +151,50 @@ export default function VacationPlanner() {
     setIsProcessing(true);
     setPhase("refinement");
     
+    // Reset agents to analyzing state for refinement
+    setAgents(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(agentId => {
+        updated[agentId] = {
+          ...updated[agentId],
+          status: "working",
+          progress: 0,
+          currentTask: "Recalibrating based on preferences..."
+        };
+      });
+      return updated;
+    });
+    
     toast({
       title: "Recalibrating Journey...",
       description: "Our concierge team is refining your itinerary based on your preferences.",
     });
 
-    const updatedPlan = await simulateRefinement(tripPlan, request.type);
-    setTripPlan(updatedPlan);
-    setPhase("results");
-    setShowComparison(true);
-    setIsProcessing(false);
-    
-    toast({
-      title: "Itinerary Refined!",
-      description: "Your journey has been optimized. Review the enhanced experience below.",
-    });
+    // Run refinement simulation with agents
+    await simulationRef.current?.runSimulation(
+      (agentId, update) => {
+        setAgents(prev => ({
+          ...prev,
+          [agentId]: { ...prev[agentId], ...update } as Agent,
+        }));
+      },
+      (message) => {
+        setAgentMessages(prev => [...prev, message]);
+      },
+      async (plan) => {
+        // Apply refinement to the generated plan
+        const refinedPlan = await simulateRefinement(tripPlan, request.type);
+        setTripPlan(refinedPlan);
+        setPhase("results");
+        setShowComparison(true);
+        setIsProcessing(false);
+        
+        toast({
+          title: "Itinerary Refined!",
+          description: "Your journey has been optimized. Review the enhanced experience below.",
+        });
+      }
+    );
   };
 
   const handleCheckout = () => {

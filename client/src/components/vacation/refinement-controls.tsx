@@ -62,13 +62,13 @@ export function RefinementControls({ onRefine, onCheckout }: RefinementControlsP
             variant="outline"
             className="h-auto py-4 flex-col items-start gap-2 hover-elevate"
             onClick={() => onRefine({ type: "cheaper" })}
-            data-testid="button-refine-cheaper"
+            data-testid="button-adjust-budget"
           >
             <DollarSign className="w-5 h-5 text-green-600" />
             <div className="text-left">
-              <div className="font-semibold text-foreground">Make it Cheaper</div>
+              <div className="font-semibold text-foreground">Adjust Budget</div>
               <div className="text-xs text-muted-foreground">
-                Reduce costs while maintaining quality
+                Optimize costs for better value
               </div>
             </div>
           </Button>
