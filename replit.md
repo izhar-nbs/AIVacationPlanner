@@ -133,6 +133,43 @@ Note: While database tooling is configured (drizzle.config.ts, schema imports), 
 
 These plugins are conditionally loaded only in development mode on Replit environment.
 
+## Recent Changes (November 3, 2025)
+
+### NorthBay Corporate Rebrand & 3-Column Layout
+**Branding Update**: Changed from "luxury travel" theme to professional NorthBay Solutions corporate identity matching their AWS Premier Partner branding:
+- **Colors**: NorthBay blue primary (#0066FF / HSL 210 100% 50%), professional gray secondary
+- **Header**: Updated to "NorthBay Solutions | AI Multi-Agent Travel Planner Demo"
+- **Logo**: Blue NorthBay icon with Sparkles
+- **Theme**: AWS-inspired professional blue aesthetic instead of ocean/sunset colors
+
+**Critical Bug Fix - Chat Hanging**: Completely rewrote chat interface logic to prevent hanging bug:
+- Chat now ALWAYS responds to user messages (no step limit)
+- Removed broken conversation step limitation
+- Chat responds appropriately at any point in conversation
+- Prevents embarrassing "frozen chat" scenario on client demo
+
+**3-Column Layout Restructure** (Major Architectural Change):
+- **Left Sidebar (w-80)**: Suggestions sidebar with quick-start travel templates
+  - Popular destinations (Tropical, European, Mountain, Romantic)
+  - Category cards (Family, Business, Weekend, Adventure)
+  - Clicking suggestions auto-populates chat
+- **Center Column (flex-1)**: Chat interface + results (always visible)
+  - Chat never hidden
+  - Results render below chat when available
+- **Right Sidebar (w-96)**: Always-visible agent dashboard
+  - Agents start as "idle" and become active during planning
+  - Budget tracker appears above agents
+  - No separate "processing" phase - agents visible throughout
+
+**Components Created**:
+- `SuggestionsSidebar` - Quick start templates with category organization
+
+**Files Modified**:
+- `client/src/pages/vacation-planner.tsx` - Complete restructure to 3-column layout
+- `client/src/components/vacation/chat-interface.tsx` - Fixed critical hanging bug
+- `client/src/index.css` - Updated to NorthBay corporate colors
+- `design_guidelines.md` - Regenerated for NorthBay corporate theme
+
 ## Recent Features (November 2025)
 
 ### PDF Export
