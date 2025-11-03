@@ -1,174 +1,226 @@
-# NorthBay Agentic Vacation Planner - Design Guidelines
+# NorthBay Agentic AI Demo - Design Guidelines
 
 ## Design Approach
 
-**Reference-Based Approach**: Drawing inspiration from luxury travel platforms (Airbnb Luxe, Mr & Mrs Smith, Virtuoso) combined with modern SaaS polish (Linear's typography, Stripe's restraint). This creates sophistication without sterility - aspirational yet approachable.
+**Hybrid Approach**: Enterprise SaaS design system (AWS Console + Linear's typography + Stripe's restraint) combined with modern AI dashboard patterns. Creates professional credibility while showcasing cutting-edge AI capabilities.
 
 **Core Principles**:
-- Premium positioning through visual hierarchy and generous spacing
-- Trust-building through transparency of AI agent work
-- Wanderlust evocation via imagery and motion
-- Professional sophistication avoiding tech-startup aesthetics
+- Enterprise-grade polish through precise alignment and consistent spacing
+- AI transparency through real-time agent status visualization
+- Technical sophistication via data visualization and process flows
+- B2B trust-building through professional, uncluttered interface
 
 ## Core Design Elements
 
 ### Typography
-- **Display Font**: Playfair Display or Cormorant Garamond (luxury serif for headlines)
-- **Body Font**: Inter or Circular (clean, modern sans-serif)
+- **Primary Font**: Inter (all contexts - display through microcopy)
 - **Hierarchy**:
-  - Hero headline: Display font, 4xl-6xl, regular weight
-  - Section titles: Display font, 3xl-4xl, medium weight
-  - Agent names/card headers: Sans-serif, xl-2xl, semibold
-  - Body text: Sans-serif, base-lg, regular weight
-  - Pricing: Sans-serif, 2xl-3xl, bold, tabular numbers
-  - Microcopy: Sans-serif, sm, medium weight
+  - Page title: 3xl-4xl, semibold
+  - Section headers: 2xl-3xl, semibold
+  - Agent names: xl, semibold
+  - Body text: base, regular
+  - Status updates: sm, medium
+  - Metadata/timestamps: xs, regular, uppercase tracking-wide
 
 ### Layout System
-**Spacing Primitives**: Tailwind units 4, 6, 8, 12, 16, 24, 32, 48
-- Section padding: py-24 md:py-32
-- Card padding: p-6 md:p-8
-- Element spacing: gap-8 md:gap-12
-- Container max-width: max-w-7xl
-- Narrow content: max-w-4xl
+**Spacing Primitives**: Tailwind units 2, 4, 6, 8, 12, 16, 24
+
+**Core Grid Structure**:
+- Container: max-w-screen-2xl with full viewport height
+- Left Sidebar: w-80, fixed, border-r
+- Center Column: flex-1, min-w-0
+- Right Sidebar: w-96, fixed, border-l
+- Section padding: p-6 to p-8
+- Card padding: p-4 to p-6
+- Element gaps: gap-4 to gap-6
 
 ## Component Library
 
-### Hero Section
-- Full viewport height (min-h-screen)
-- Large background image (luxury destination: overwater bungalows, pristine beaches)
-- Centered content with blurred-background overlay card
-- Display font headline: "Your Perfect Vacation, Orchestrated by AI"
-- Subheadline explaining luxury personalization
-- Large chat textarea (min-h-32) with premium placeholder
-- Trust indicators below: "Trusted by 10,000+ travelers" with 5-star rating
-- Subtle scroll indicator at bottom
+### Global Layout
 
-### Navigation
-- Sticky transparent header with blur backdrop
-- Logo left, minimal nav links center, CTA button right
-- Transitions to solid background on scroll
-- Clean, unobtrusive design
+**Header Bar** (all pages):
+- Fixed top, full width, h-16, border-b
+- NorthBay logo left (h-8), navigation center, user avatar + "Demo Mode" badge right
+- Clean corporate aesthetic with subtle shadow
 
-### Multi-Agent Dashboard (Central Experience)
-**Layout**: 3-column grid on desktop (grid-cols-1 md:grid-cols-2 lg:grid-cols-3)
+**3-Column Dashboard** (main interface):
+- Left: Quick suggestions sidebar with preset prompts
+- Center: Chat interface with message history
+- Right: Always-visible agent status dashboard
 
-**Agent Cards**:
-- Elevated cards with subtle gradient borders (luxury accent)
-- Large icon at top (Heroicons: MapIcon, CalendarIcon, HomeIcon, etc.)
-- Agent name in display font, smaller size
-- Animated horizontal progress bar with gradient fill
-- Status text updates with typewriter effect
-- Completion: checkmark icon with subtle scale animation
-- Hover: gentle lift (translateY -1px) with shadow enhancement
+### Left Sidebar - Quick Suggestions
 
-**Inter-Agent Communication**:
-- Elegant toast notifications between cards
-- Curved connection lines with animated dots
-- Premium microcopv: "Flight Curator found 3 perfect options..."
-- Brief display with graceful fade
+**Structure**:
+- Header: "Quick Start" with icon
+- Category sections with dividers
+- Preset prompt cards in vertical stack (gap-2)
 
-### Budget Tracker
-- Sticky card during processing, top-right position
-- Large counter with luxury typography: "$4,320 / $5,000"
-- Thin elegant progress bar (h-2) with gradient
-- Breakdown: horizontal bar chart (not pie) with labeled segments
-- Smooth color transitions reflecting budget status
-- CountUp animation with easing function
+**Prompt Cards**:
+- Compact design (p-3), subtle border, hover lift
+- Icon left (Heroicons), prompt text truncated
+- Click to populate chat input
+- Categories: "Family Vacations", "Business Travel", "Weekend Getaways", "Adventure Trips"
+- 3-4 prompts per category
 
-### Results Presentation
+**Bottom Section**:
+- "Recent Conversations" list with timestamps
+- Load previous session functionality
 
-**Destination Hero Card**:
-- Full-width dramatic image (16:9, high-quality destination photo)
-- Overlay gradient for text readability
-- Large match score badge: "96% Perfect Match"
-- Expandable "Why Cancún?" section with 5 compelling reasons
-- Alternative destinations as smaller cards in 3-column grid below
+### Center Column - Chat Interface
 
-**Flight Comparison**:
-- Clean table layout, 3 options side-by-side
-- Recommended option: subtle border accent, "Best Value" badge
-- Key details: airline logo, duration with clock icon, price bold
-- Trade-off indicators: icons for baggage, legroom, timing
-- "Select" buttons with gradient background
+**Header**:
+- Title: "AI Vacation Planner" with subtitle "Powered by Multi-Agent Architecture"
+- Session info: timestamp, request ID for enterprise tracking
+
+**Message Container**:
+- Scrollable area with max-h constraint
+- User messages: right-aligned, background treatment
+- AI responses: left-aligned with agent avatar icon
+- Typing indicators with animated dots
+- Timestamp on each message (xs, muted)
+
+**Input Area** (bottom fixed):
+- Large textarea (min-h-24) with professional placeholder
+- Send button with icon, disabled state styling
+- Character counter, attachment option (for itinerary exports)
+- "Processing..." state with progress indicator
+
+**AI Response Cards** (within chat):
+- Destination recommendations: image thumbnail (4:3, small), title, 2-line description, match score badge
+- Flight options: compact table format, 2-3 rows, key metrics
+- Hotels: horizontal card layout with image left (1:1), details right
+- Each with "View Details" expansion
+
+### Right Sidebar - Agent Dashboard
+
+**Header**:
+- "AI Agents" title with live status count badge
+- "All systems operational" indicator
+
+**Agent Status Cards** (vertical stack, gap-4):
+- Icon top-left (Heroicons: MapIcon, CalendarIcon, HomeIcon, WalletIcon, SparklesIcon)
+- Agent name: "Destination Finder", "Flight Curator", "Hotel Concierge", "Budget Optimizer", "Itinerary Builder"
+- Status badge: "Idle" / "Analyzing" / "Complete" with appropriate styling
+- Progress bar (h-2, rounded) with percentage label
+- Current action text: "Analyzing 847 destinations..." with typewriter effect
+- Completion timestamp when done
+
+**Agent Communication Flows**:
+- Connector lines between cards (subtle, animated dashed)
+- Data exchange indicators: "→ Sent budget constraints to Hotel Concierge"
+- Micro-animations on status changes
+
+**Collaboration Panel** (bottom):
+- "Inter-Agent Activity" feed
+- Recent exchanges in compact list format
+- Timestamps and agent-to-agent messages
+
+### Budget Tracker (within right sidebar)
+
+**Card Design**:
+- Prominent placement above agent cards
+- Large counter display: "$4,320 / $5,000 Budget"
+- Horizontal progress bar with segments
+- Breakdown table: Flight, Hotel, Activities, Meals (amounts right-aligned)
+- Real-time updates with subtle highlight flash
+
+### Results Presentation (in center column chat)
+
+**Comprehensive Proposal Card**:
+- Expandable sections with smooth accordion
+- Summary header: destination, dates, total price, match score (large badge)
+
+**Destination Section**:
+- Hero image (16:9, professional travel photo)
+- Title overlay with gradient backdrop for text
+- "Why This Destination" with 5 bullet points, icons for each
+- Alternative options: 3-column grid below with smaller cards
+
+**Flight Comparison Table**:
+- 3 options in clean table rows
+- Columns: Airline (logo), Route, Duration, Price, Baggage, Selection
+- Recommended row: subtle border accent
+- Trade-off indicators with tooltips
 
 **Hotel Grid**:
-- 4-column responsive grid (grid-cols-1 md:grid-cols-2 lg:grid-cols-4)
-- Landscape images (3:2 ratio) with hover zoom effect
-- Elegant overlay with hotel name, star rating (filled star icons), price
-- "AI Recommended" badge on top choice
-- Hover: detailed description overlay with blur backdrop
+- 4-column responsive grid (grid-cols-2 lg:grid-cols-4)
+- Square images (1:1) with overlay
+- Hotel name, star rating (icons), price per night
+- "AI Selected" badge on top choice
+- Hover reveals amenities list
 
 **Itinerary Timeline**:
-- Vertical timeline with elegant connecting line
-- Day cards: date in display font, activities listed with icons
-- Time slots, activity names, cost per item
-- Expandable details with smooth accordion
-- Bottom summary: "5 Days • 12 Activities • $1,847"
+- Vertical layout with connecting line
+- Day headers in medium weight
+- Activity cards: time, name, cost, description
+- Icons for activity types (dining, sightseeing, relaxation)
+- Collapsible details for each day
+- Footer summary: duration, activity count, subtotal
 
-### Refinement Interface
-- Floating action bar at bottom (sticky, blur backdrop)
-- Button group: "Make it Cheaper" | "Different Destination" | "Luxury Upgrade"
-- Comparison modal: split-screen old vs. new with highlighted differences
-- Recalculation: 45-second progress with skeleton loaders showing card structure
-- Change indicators: subtle pulse on modified values
+### Refinement Controls
 
-### Checkout Experience
-- Full-screen modal with dark overlay (backdrop-blur)
-- Centered card (max-w-2xl) with premium styling
-- Trip summary: destination image, dates, total breakdown
-- Pre-filled form in elegant layout (2-column on desktop)
-- Payment fields: Card ending 1111, CVV 111, Exp 12/25
-- "Complete Booking" button with gradient
-- Success: animated checkmark, confetti particles, confirmation with download options
+**Action Bar** (appears after proposal):
+- Horizontal button group: "Adjust Budget" | "Change Dates" | "Different Destination" | "Upgrade Options"
+- Each triggers specific agent reprocessing
+- Loading state: progress indicator with estimated time
+- Comparison view: split-screen old vs new with diff highlighting
 
-## Animations
+### Enterprise Features
 
-Use sparingly for premium feel:
-- **Agent Progress**: Smooth 0-100% fills over 45-60 seconds with easing
-- **Budget Counter**: CountUp with spring easing
-- **Card Reveals**: Staggered fade-in from bottom (delay-100, delay-200)
-- **Success States**: Gentle scale bounce (scale-105) on checkmarks
-- **Hover Effects**: Subtle lifts, no excessive motion
-- **Image Parallax**: Light parallax on hero scroll (translateY 10-20%)
+**Technical Transparency Panel** (collapsible in right sidebar):
+- Agent architecture diagram (simple node visualization)
+- Token usage counter for cost transparency
+- Processing timeline: waterfall chart showing agent execution
+- "Explainable AI" badge with reasoning tooltips
+
+**Export Options** (in chat interface):
+- "Download Proposal" button → PDF generation
+- "Share Session" → unique URL with read-only access
+- "Email Itinerary" with form modal
 
 ## Images
 
-### Hero Section
-**Required**: Large, inspiring luxury destination photo
-- Style: Professional travel photography, aspirational quality
-- Subject: Overwater bungalows, pristine beaches, luxury resorts
-- Treatment: Slight darkening for text contrast
-- Aspect: Full viewport background, object-cover
+### Primary Usage
+- **Center Column**: Destination photos within chat response cards (16:9, professional travel photography)
+- **Hotel Cards**: Property photos (1:1 square for grid consistency)
+- **Hero**: NOT USED - application is dashboard-style, no hero section
 
-### Destination Cards
-- High-resolution location photography (16:9 ratio)
-- Examples: Cancún beaches, Tulum ruins, Maldives waters, Swiss Alps
-- Quality: Premium, magazine-style imagery
+### Image Specifications
+- Destination images: High-quality, professional, aspirational (beaches, cities, landmarks)
+- Hotel images: Exterior shots or signature views, consistent quality
+- All images: Professional travel photography, NOT stock-photo generic
+- Treatment: Slight overlay gradients on text overlays for readability
 
-### Hotel Images
-- Landscape property photos (3:2 ratio)
-- Focus: Luxury interiors, pools, views, amenities
-- Consistent professional quality
+## Animations
 
-### Activity Icons
-Use Heroicons consistently: MapIcon, SunIcon, UtensilsIcon, CameraIcon, HeartIcon
+Minimal, purposeful animations:
+- **Agent Progress Bars**: Smooth 0-100% fills over realistic timeframes (30-60s)
+- **Status Changes**: Gentle pulse on badge updates
+- **Card Reveals**: Staggered fade-in (100ms delays) for multi-card layouts
+- **Typing Indicators**: Standard dot animation
+- **Success States**: Checkmark with scale bounce (scale-105)
+- **Hover**: Subtle translateY(-1px) on interactive cards
+- **Inter-Agent Lines**: Animated dashed stroke for data flow
 
 ## Responsive Behavior
-- **Mobile**: Single column, stacked cards, simplified timeline, bottom nav
-- **Tablet**: 2-column grids, condensed spacing (py-16)
-- **Desktop**: Full 3-4 column layouts, optimal spacing (py-32)
+- **Desktop (lg+)**: Full 3-column layout as designed
+- **Tablet (md)**: Collapsible sidebars, center column prioritized, drawer overlays
+- **Mobile**: Single column, bottom navigation, agent dashboard as modal overlay, stacked cards
 
-## Trust Elements
-Position prominently throughout:
-- "15 hours → 5 minutes" comparison with icon graphic
-- "500+ luxury properties vetted" badge with checkmark
-- "Explainable AI" tags on recommendation cards
-- Client testimonials: elegant quote cards with traveler photos
-- "Real-time price monitoring" indicator during refinement
+## Trust & Enterprise Elements
+
+Position throughout interface:
+- "AWS-Powered AI" badge in header
+- "NorthBay Solutions" branding with enterprise credibility
+- Processing metrics: "Analyzed 1,247 options in 45 seconds"
+- Certification badges: "SOC 2 Compliant", "Enterprise-Grade Security"
+- Agent explanations: "Why this recommendation" tooltips
+- Real-time status: "All agents operational" indicators
 
 ## Accessibility
-- High contrast text overlays on images
-- Focus indicators: subtle luxury accent border
-- Keyboard navigation throughout
-- Screen reader labels on all interactive elements
-- Alt text for destination imagery
+- WCAG AA compliant contrast ratios
+- Focus indicators: subtle border enhancement
+- Keyboard navigation: full tab order through all interactive elements
+- ARIA labels on all agent status cards and progress indicators
+- Screen reader announcements for status changes
+- Alt text on all destination/hotel imagery
