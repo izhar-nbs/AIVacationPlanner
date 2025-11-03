@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles } from "lucide-react";
+import { SuggestionsSidebar } from "@/components/vacation/suggestions-sidebar";
 import { ChatInterface } from "@/components/vacation/chat-interface";
 import { MultiAgentDashboard } from "@/components/vacation/multi-agent-dashboard";
 import { BudgetTracker } from "@/components/vacation/budget-tracker";
@@ -124,101 +126,68 @@ export default function VacationPlanner() {
     setPhase("confirmation");
   };
 
+  const handleSuggestionClick = (prompt: string) => {
+    handleSendMessage(prompt);
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50 flex-shrink-0">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <span className="text-primary">NorthBay</span>
-                <span className="text-muted-foreground font-normal text-lg">|</span>
-                <span>AI Travel Concierge</span>
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Luxury journeys orchestrated in 90 seconds
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  <span className="text-primary">NorthBay</span>
+                  <span className="text-muted-foreground font-normal text-base">Solutions</span>
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  AI Multi-Agent Travel Planner Demo
+                </p>
+              </div>
             </div>
-            {phase !== "input" && (
+            {isProcessing && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-right"
+                className="flex items-center gap-2 text-sm"
               >
-                <div className="text-sm font-medium text-primary">
-                  {phase === "processing" && "Concierge Team Active..."}
-                  {phase === "results" && "Itinerary Curated"}
-                  {phase === "refinement" && "Refining Journey..."}
-                  {phase === "confirmation" && "Reservation Confirmed"}
-                </div>
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="font-medium text-primary">Agents Active</span>
               </motion.div>
             )}
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <AnimatePresence mode="wait">
-          {phase === "input" && (
-            <motion.div
-              key="input"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
+      {/* 3-Column Layout */}
+      <main className="flex-1 flex overflow-hidden">
+        {/* Left Sidebar - Suggestions */}
+        <div className="w-80 flex-shrink-0 hidden lg:block">
+          <SuggestionsSidebar onSelectSuggestion={handleSuggestionClick} />
+        </div>
+
+        {/* Center Column - Chat & Results */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {phase === "confirmation" ? (
+            <SuccessConfirmation tripPlan={tripPlan} />
+          ) : (
+            <>
               <ChatInterface
                 messages={messages}
                 onSendMessage={handleSendMessage}
                 onStartPlanning={handleStartPlanning}
                 onAddMessage={handleAddMessage}
               />
-            </motion.div>
-          )}
-
-          {(phase === "processing" || phase === "results" || phase === "refinement") && (
-            <motion.div
-              key="planning"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-8"
-            >
-              {/* Multi-Agent Dashboard - The WOW Factor */}
-              {(phase === "processing" || isProcessing) && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <MultiAgentDashboard agents={agents} messages={agentMessages} />
-                </motion.div>
-              )}
-
-              {/* Budget Tracker - Sticky during processing */}
-              {tripPlan && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className={phase === "processing" ? "sticky top-20 z-40" : ""}
-                >
-                  <BudgetTracker budget={tripPlan.budget} />
-                </motion.div>
-              )}
 
               {/* Comparison View (after refinement) */}
               {phase === "results" && showComparison && previousPlan && tripPlan && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="space-y-8"
-                >
+                <div className="space-y-6">
                   <ComparisonView oldPlan={previousPlan} newPlan={tripPlan} />
-                  
                   <div className="flex justify-center">
                     <button
                       onClick={() => setShowComparison(false)}
@@ -228,39 +197,35 @@ export default function VacationPlanner() {
                       View full plan details →
                     </button>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* Results Presentation */}
               {phase === "results" && tripPlan && !showComparison && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="space-y-8"
-                >
+                <div className="space-y-6">
                   <ResultsPresentation plan={tripPlan} />
-                  
                   <RefinementControls
                     onRefine={handleRefinement}
                     onCheckout={handleCheckout}
                   />
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+            </>
           )}
+        </div>
 
-          {phase === "confirmation" && (
-            <motion.div
-              key="confirmation"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <SuccessConfirmation tripPlan={tripPlan} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Right Sidebar - Agents (Always Visible) */}
+        <div className="w-96 flex-shrink-0 hidden xl:flex flex-col border-l border-border bg-card/50">
+          <div className="p-6 space-y-4 overflow-y-auto flex-1">
+            {/* Budget Tracker */}
+            {tripPlan && (
+              <BudgetTracker budget={tripPlan.budget} />
+            )}
+
+            {/* Agent Dashboard - Always Visible */}
+            <MultiAgentDashboard agents={agents} messages={agentMessages} />
+          </div>
+        </div>
       </main>
 
       {/* Checkout Modal */}
