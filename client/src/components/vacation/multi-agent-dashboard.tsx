@@ -69,12 +69,22 @@ const agentConfigs = [
 interface MultiAgentDashboardProps {
   agents: Record<string, Agent>;
   messages: InterAgentMessage[];
+  onViewResults?: () => void;
+  onCheckout?: () => void;
+  showResultsButton?: boolean;
 }
 
-export function MultiAgentDashboard({ agents, messages }: MultiAgentDashboardProps) {
+export function MultiAgentDashboard({ 
+  agents, 
+  messages, 
+  onViewResults,
+  onCheckout,
+  showResultsButton = false 
+}: MultiAgentDashboardProps) {
   const [showMessages, setShowMessages] = useState(false);
   
   const activeAgents = Object.values(agents).filter(a => a.status !== "idle").length;
+  const allAgentsComplete = Object.values(agents).every(a => a.status === "completed");
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -219,6 +229,39 @@ export function MultiAgentDashboard({ agents, messages }: MultiAgentDashboardPro
             })}
           </CardContent>
         </Card>
+
+        {/* Action Buttons - Show when all agents complete */}
+        {allAgentsComplete && showResultsButton && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.3, type: "spring" }}
+            className="space-y-2"
+          >
+            {onViewResults && (
+              <Button
+                onClick={onViewResults}
+                className="w-full"
+                size="lg"
+                data-testid="button-view-results"
+              >
+                <Check className="w-5 h-5 mr-2" />
+                View Your Trip
+              </Button>
+            )}
+            {onCheckout && (
+              <Button
+                onClick={onCheckout}
+                variant="outline"
+                className="w-full"
+                size="lg"
+                data-testid="button-book-from-sidebar"
+              >
+                Book This Trip
+              </Button>
+            )}
+          </motion.div>
+        )}
 
         {/* Compact Inter-Agent Messages */}
         {messages.length > 0 && (

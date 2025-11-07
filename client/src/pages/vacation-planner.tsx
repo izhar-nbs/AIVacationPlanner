@@ -210,6 +210,14 @@ export default function VacationPlanner() {
     handleSendMessage(prompt);
   };
 
+  const handleViewResults = () => {
+    // Scroll the center column to show results
+    const resultsElement = document.querySelector('[data-results-section]');
+    if (resultsElement) {
+      resultsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
@@ -282,7 +290,7 @@ export default function VacationPlanner() {
 
               {/* Results Presentation */}
               {phase === "results" && tripPlan && !showComparison && (
-                <div className="space-y-6">
+                <div className="space-y-6" data-results-section>
                   <ResultsPresentation plan={tripPlan} />
                   <RefinementControls
                     onRefine={handleRefinement}
@@ -303,7 +311,13 @@ export default function VacationPlanner() {
             )}
 
             {/* Agent Dashboard - Always Visible */}
-            <MultiAgentDashboard agents={agents} messages={agentMessages} />
+            <MultiAgentDashboard 
+              agents={agents} 
+              messages={agentMessages}
+              onViewResults={handleViewResults}
+              onCheckout={handleCheckout}
+              showResultsButton={phase === "results"}
+            />
           </div>
         </div>
       </main>
