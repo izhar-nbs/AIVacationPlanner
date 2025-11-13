@@ -234,21 +234,24 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="overflow-hidden" data-testid="card-destination">
-          <div className="aspect-video relative overflow-hidden">
+        <Card className="overflow-hidden shadow-xl border-border/50" data-testid="card-destination">
+          <div className="aspect-video relative overflow-hidden group">
             <img
               src={plan.destination.imageUrl}
               alt={plan.destination.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            <div className="absolute top-4 right-4">
-              <Badge className="bg-primary text-primary-foreground text-lg px-4 py-2">
-                <Star className="w-4 h-4 mr-1 fill-current" />
-                {plan.destination.matchScore}/100
+            {/* Gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            <div className="absolute top-6 right-6">
+              <Badge className="bg-white/95 backdrop-blur-sm text-foreground text-lg px-5 py-2.5 shadow-lg border border-white/20">
+                <Star className="w-5 h-5 mr-2 fill-primary text-primary" />
+                <span className="font-bold">{plan.destination.matchScore}</span>
+                <span className="text-muted-foreground text-sm ml-1">/100 Match</span>
               </Badge>
             </div>
           </div>
-          <CardContent className="p-6 space-y-4">
+          <CardContent className="p-8 space-y-6">
             <div>
               <h3 className="text-2xl font-bold text-foreground flex items-center gap-2">
                 <MapPin className="w-6 h-6 text-primary" />
@@ -307,55 +310,59 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
           <Plane className="w-5 h-5 text-primary" />
           Flight Options
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plan.flights.map((flight) => (
             <Card
               key={flight.id}
-              className={`cursor-pointer transition-all hover-elevate ${
-                selectedFlight === flight.id ? "border-primary border-2" : ""
-              } ${flight.recommended ? "ring-2 ring-primary/20" : ""}`}
+              className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                selectedFlight === flight.id ? "border-primary border-2 shadow-lg shadow-primary/20" : "shadow-md"
+              } ${flight.recommended ? "ring-2 ring-primary/30" : ""}`}
               onClick={() => handleFlightChange(flight.id)}
               data-testid={`card-flight-${flight.id}`}
             >
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h4 className="font-semibold text-foreground">
+                    <h4 className="font-bold text-foreground text-lg">
                       {flight.airline}
                     </h4>
-                    <p className="text-sm text-muted-foreground capitalize">
+                    <p className="text-sm text-muted-foreground capitalize font-medium">
                       {flight.class}
                     </p>
                   </div>
                   {flight.recommended && (
-                    <Badge variant="default" className="text-xs">
-                      Recommended
+                    <Badge className="bg-gradient-to-r from-primary to-secondary text-white shadow-md">
+                      <Star className="w-3 h-3 mr-1 fill-white" />
+                      Best Value
                     </Badge>
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-2">
+              <CardContent className="space-y-4">
+                <div className="space-y-3 bg-muted/30 rounded-lg p-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Duration</span>
-                    <span className="font-medium text-foreground flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                    <span className="text-muted-foreground font-medium">Duration</span>
+                    <span className="font-semibold text-foreground flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-primary" />
                       {flight.duration}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Stops</span>
-                    <span className="font-medium text-foreground">
+                    <span className="text-muted-foreground font-medium">Stops</span>
+                    <span className="font-semibold text-foreground">
                       {flight.stops === 0 ? "Direct" : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
                     </span>
                   </div>
                 </div>
-                <div className="pt-3 border-t border-border">
-                  <div className="text-2xl font-bold text-foreground">
+                <div className="pt-2">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                     ${flight.price.toLocaleString()}
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1 font-medium">
+                    per person
+                  </p>
                   {flight.tradeoffs && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-2 italic">
                       {flight.tradeoffs}
                     </p>
                   )}

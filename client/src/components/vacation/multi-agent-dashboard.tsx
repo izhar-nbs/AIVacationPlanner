@@ -12,7 +12,7 @@ import {
   ChevronUp
 } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { CircularProgress } from "@/components/ui/circular-progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,20 +88,31 @@ export function MultiAgentDashboard({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="space-y-4">
-        {/* Compact Header */}
+      <div className="space-y-6">
+        {/* Premium Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Activity className={`w-4 h-4 ${activeAgents > 0 ? "text-primary animate-pulse" : "text-muted-foreground"}`} />
-            <h3 className="text-sm font-semibold text-foreground">
-              AI Agents {activeAgents > 0 && `(${activeAgents}/5)`}
-            </h3>
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              activeAgents > 0 ? "bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/20" : "bg-muted"
+            }`}>
+              <Activity className={`w-5 h-5 ${activeAgents > 0 ? "text-white" : "text-muted-foreground"}`} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">
+                AI Agents
+              </h3>
+              {activeAgents > 0 && (
+                <p className="text-sm text-muted-foreground font-medium">
+                  {activeAgents} of 5 active
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Compact Agent Rows */}
-        <Card>
-          <CardContent className="p-3 space-y-2">
+        {/* Premium Agent Cards */}
+        <Card className="shadow-lg border-border/50">
+          <CardContent className="p-4 space-y-3">
             {agentConfigs.map((config, index) => {
               const agent = agents[config.id];
               if (!agent) return null;
@@ -121,13 +132,13 @@ export function MultiAgentDashboard({
                 >
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className={`p-2 rounded-lg hover-elevate transition-all cursor-help ${
-                        isComplete ? "bg-primary/5 border border-primary/20" : 
-                        isWorking ? "bg-muted/50" : 
-                        "bg-muted/20"
+                      <div className={`p-3.5 rounded-xl transition-all cursor-help shadow-sm ${
+                        isComplete ? "bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30 shadow-primary/10" : 
+                        isWorking ? "bg-white border border-border/40" : 
+                        "bg-muted/40 border border-muted-foreground/20"
                       }`}>
-                        {/* Agent Row */}
-                        <div className="flex items-center gap-2 mb-1.5">
+                        {/* Premium Agent Row with Circular Progress */}
+                        <div className="flex items-center gap-3">
                           <AnimatePresence mode="wait">
                             {isComplete ? (
                               <motion.div
@@ -137,8 +148,8 @@ export function MultiAgentDashboard({
                                 exit={{ scale: 0 }}
                                 className="flex-shrink-0"
                               >
-                                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                                  <Check className="w-3 h-3 text-primary-foreground" />
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/30">
+                                  <Check className="w-7 h-7 text-white" />
                                 </div>
                               </motion.div>
                             ) : (
@@ -146,32 +157,57 @@ export function MultiAgentDashboard({
                                 key="icon"
                                 initial={{ scale: 1 }}
                                 exit={{ scale: 0 }}
-                                className={`flex-shrink-0 ${config.color}`}
+                                className="flex-shrink-0 relative"
                               >
-                                <Icon className="w-5 h-5" />
+                                {/* Circular Progress Ring */}
+                                <CircularProgress 
+                                  value={agent.progress} 
+                                  size={56} 
+                                  strokeWidth={5}
+                                  gradientId={`agent-progress-${config.id}`}
+                                />
+                                {/* Icon in Center */}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                                    isWorking ? "bg-gradient-to-br from-secondary/20 to-secondary/10" : "bg-muted"
+                                  }`}>
+                                    <Icon className={`w-5 h-5 ${isWorking ? config.color : "text-muted-foreground"}`} />
+                                  </div>
+                                </div>
                               </motion.div>
                             )}
                           </AnimatePresence>
-                          <span className={`flex-1 text-sm font-medium ${
-                            isIdle ? "text-muted-foreground" : "text-foreground"
-                          }`}>
-                            {config.shortName}
-                          </span>
-                          <span className={`text-xs font-mono font-semibold tabular-nums ${
-                            isComplete ? "text-primary" :
-                            isWorking ? "text-foreground" :
-                            "text-muted-foreground"
-                          }`} data-testid={`text-progress-${config.id}`}>
-                            {agent.progress}%
-                          </span>
+                          <div className="flex-1 min-w-0">
+                            <span className={`block text-base font-semibold leading-tight ${
+                              isIdle ? "text-muted-foreground" : "text-foreground"
+                            }`}>
+                              {config.shortName}
+                            </span>
+                            {isWorking && (
+                              <span className="block text-xs text-muted-foreground mt-1 truncate">
+                                {agent.currentTask}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0 text-right">
+                            <span className={`block text-lg font-bold tabular-nums ${
+                              isComplete ? "text-primary" :
+                              isWorking ? "text-foreground" :
+                              "text-muted-foreground"
+                            }`} data-testid={`text-progress-${config.id}`}>
+                              {agent.progress}%
+                            </span>
+                            {isIdle ? (
+                              <Badge variant="secondary" className="text-[10px] px-2 py-0 h-4 mt-1">
+                                Idle
+                              </Badge>
+                            ) : (
+                              <span className="block text-[10px] text-muted-foreground uppercase tracking-wide mt-1">
+                                {isComplete ? "Complete" : "Active"}
+                              </span>
+                            )}
+                          </div>
                         </div>
-
-                        {/* Compact Progress Bar */}
-                        <Progress 
-                          value={agent.progress} 
-                          className="h-1.5"
-                          data-testid={`progress-${config.id}`}
-                        />
 
                         {/* Status Indicator (only when working) */}
                         {isWorking && (
