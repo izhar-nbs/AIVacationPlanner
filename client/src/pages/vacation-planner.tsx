@@ -10,8 +10,9 @@ import { RefinementControls } from "@/components/vacation/refinement-controls";
 import { CheckoutModal } from "@/components/vacation/checkout-modal";
 import { SuccessConfirmation } from "@/components/vacation/success-confirmation";
 import { ComparisonView } from "@/components/vacation/comparison-view";
-import { AgentSimulation, simulateRefinement } from "@/lib/agent-simulation";
+import { AgentSimulation, simulateRefinement, type SimulationContext } from "@/lib/agent-simulation";
 import { calculateBudgetFromSelections } from "@/lib/budget-calculator";
+import { resolveDestination, getConfidenceMessage } from "@/lib/destination-resolver";
 import { useToast } from "@/hooks/use-toast";
 import type { 
   AppPhase, 
@@ -96,7 +97,6 @@ export default function VacationPlanner() {
   const { toast } = useToast();
 
   useEffect(() => {
-    simulationRef.current = new AgentSimulation();
     return () => {
       simulationRef.current?.cleanup();
     };
@@ -120,19 +120,32 @@ export default function VacationPlanner() {
   };
 
   const handleStartPlanning = async (prefs: VacationPreferences) => {
-    setPreferences(prefs);
+    // Extract destination from user's description
+    const resolved = resolveDestination(prefs.description);
+    const enrichedPrefs = {
+      ...prefs,
+      destination: resolved.destination,
+    };
+    
+    setPreferences(enrichedPrefs);
     setPhase("processing");
     setIsProcessing(true);
     
+    const confidenceMsg = getConfidenceMessage(resolved.confidence, resolved.destination.name);
+    
     toast({
       title: "Travel Concierge Team Deployed",
-      description: "Our 5 specialized AI agents are now analyzing 500+ luxury properties and experiences to curate your perfect getaway.",
+      description: `${confidenceMsg}. Our 5 specialized AI agents are now curating your perfect getaway.`,
     });
 
-    // Ensure simulation is initialized
-    if (!simulationRef.current) {
-      simulationRef.current = new AgentSimulation();
-    }
+    // Create simulation context with resolved destination
+    const context: SimulationContext = {
+      destination: resolved.destination,
+      preferences: enrichedPrefs,
+    };
+
+    // Initialize simulation with context
+    simulationRef.current = new AgentSimulation(context);
 
     // Run agent simulation
     await simulationRef.current.runSimulation(
@@ -194,10 +207,12 @@ export default function VacationPlanner() {
       description: "Our concierge team is refining your itinerary based on your preferences.",
     });
 
-    // Ensure simulation is initialized
-    if (!simulationRef.current) {
-      simulationRef.current = new AgentSimulation();
-    }
+    // Create new simulation context for refinement (destination might have changed)
+    const context: SimulationContext = {
+      destination: tripPlan.destination,
+      preferences: preferences,
+    };
+    simulationRef.current = new AgentSimulation(context);
 
     // Run refinement simulation with agents
     await simulationRef.current.runSimulation(

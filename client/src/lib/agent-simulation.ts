@@ -3,13 +3,20 @@ import type {
   AgentUpdate, 
   InterAgentMessage,
   TripPlan,
-  BudgetStatus 
+  BudgetStatus,
+  Destination,
+  VacationPreferences
 } from "@shared/schema";
-import { destinations, flights, hotels, generateItinerary } from "./mock-data";
+import { destinations, flights, hotels, generateItinerary, generateDestinationData } from "./mock-data";
 
 export type AgentUpdateCallback = (agentId: string, update: Partial<Agent>) => void;
 export type MessageCallback = (message: InterAgentMessage) => void;
 export type CompletionCallback = (plan: TripPlan) => void;
+
+export interface SimulationContext {
+  destination: Destination;
+  preferences?: VacationPreferences;
+}
 
 // Agent status update sequences (optimized for fast demo - completes in ~12 seconds)
 const agentSequences = {
@@ -90,6 +97,11 @@ const interAgentMessages: Array<{ from: string; to: string; message: string; del
 
 export class AgentSimulation {
   private timers: NodeJS.Timeout[] = [];
+  private context: SimulationContext;
+
+  constructor(context: SimulationContext) {
+    this.context = context;
+  }
 
   async runSimulation(
     onAgentUpdate: AgentUpdateCallback,
@@ -161,7 +173,8 @@ export class AgentSimulation {
   }
 
   private generateTripPlan(): TripPlan {
-    const destination = destinations[0]; // Cancún
+    const destination = this.context.destination; // Use dynamic destination
+    const { flights: destFlights, hotels: destHotels } = generateDestinationData(destination);
     const itinerary = generateItinerary();
     
     // Calculate total activity costs
@@ -170,8 +183,8 @@ export class AgentSimulation {
       0
     );
 
-    const flightCost = flights[0].price; // Direct Delta flight
-    const hotelCost = hotels[0].totalPrice; // Hyatt Zilara
+    const flightCost = destFlights[0].price; // Direct Delta flight
+    const hotelCost = destHotels[0].totalPrice; // Resort
     const foodCost = 0; // Included in all-inclusive
     const transportCost = 0; // Included
 
@@ -196,10 +209,10 @@ export class AgentSimulation {
     return {
       id: Date.now().toString(),
       destination,
-      flights,
-      selectedFlight: flights[0],
-      hotels,
-      selectedHotel: hotels[0],
+      flights: destFlights,
+      selectedFlight: destFlights[0],
+      hotels: destHotels,
+      selectedHotel: destHotels[0],
       itinerary,
       budget: budgetStatus,
       createdAt: new Date(),

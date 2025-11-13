@@ -153,6 +153,7 @@ export interface TripPlan {
 // User Input Types
 export interface VacationPreferences {
   description: string;
+  destination?: Destination;
   budget?: number;
   duration?: number;
   travelers?: number;
