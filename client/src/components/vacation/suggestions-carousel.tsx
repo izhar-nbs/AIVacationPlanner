@@ -46,31 +46,31 @@ const suggestions = [
 
 export function SuggestionsCarousel({ onSelectSuggestion }: SuggestionsCarouselProps) {
   return (
-    <div className="w-full py-4 px-6 bg-gradient-to-r from-background via-muted/10 to-background border-b border-border">
-      <div className="max-w-[1600px] mx-auto">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Quick Start
+    <div className="w-full py-2.5 px-4 bg-muted/30 border-b border-border">
+      <div className="max-w-[1920px] mx-auto">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em]">
+            Quick Templates
           </span>
-          <div className="h-px flex-1 bg-border" />
+          <div className="h-px flex-1 bg-border/50" />
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+        <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
           {suggestions.map((suggestion) => (
             <motion.div
               key={suggestion.id}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01, y: -1 }}
+              whileTap={{ scale: 0.99 }}
             >
               <Button
                 variant="outline"
                 onClick={() => onSelectSuggestion(suggestion.prompt)}
-                className="flex items-center gap-2 px-4 py-2 h-auto whitespace-nowrap bg-white/80 hover-elevate active-elevate-2 border-border/60"
+                className="flex items-center gap-1.5 px-3 py-1.5 h-auto whitespace-nowrap bg-white hover-elevate active-elevate-2 border-border/50 text-xs font-medium"
                 data-testid={`suggestion-${suggestion.id}`}
               >
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${suggestion.color} flex items-center justify-center flex-shrink-0`}>
-                  <suggestion.icon className="w-4 h-4 text-white" />
+                <div className={`w-6 h-6 rounded-md bg-gradient-to-br ${suggestion.color} flex items-center justify-center flex-shrink-0`}>
+                  <suggestion.icon className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="text-sm font-medium text-foreground">{suggestion.label}</span>
+                <span className="text-foreground">{suggestion.label}</span>
               </Button>
             </motion.div>
           ))}

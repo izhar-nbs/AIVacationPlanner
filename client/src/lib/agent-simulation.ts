@@ -30,11 +30,11 @@ const agentSequences = {
   ],
   "flight-optimizer": [
     { progress: 10, task: "Searching JFK flights...", delay: 800 },
-    { progress: 25, task: "Found 89 flight options...", delay: 1600 },
+    { progress: 25, task: "Scanning global flight inventory...", delay: 1600 },
     { progress: 45, task: "Analyzing prices and routes...", delay: 2000 },
     { progress: 65, task: "Checking seat availability...", delay: 1600 },
     { progress: 85, task: "Optimizing for best value...", delay: 1600 },
-    { progress: 100, task: "Best routes identified ✓", delay: 800, result: "3 options from $850" },
+    { progress: 100, task: "Best routes identified ✓", delay: 800, result: "Multiple options ready" },
   ],
   "accommodation-finder": [
     { progress: 12, task: "Scanning 200+ hotels...", delay: 1200 },
@@ -53,11 +53,11 @@ const agentSequences = {
     { progress: 100, task: "7-day itinerary complete ✓", delay: 800, result: "28 activities planned" },
   ],
   "budget-guardian": [
-    { progress: 80, task: "Flight: $1,200 | Hotel: $0 | Activities: $0", delay: 800 },
-    { progress: 85, task: "Flight: $1,200 | Hotel: $2,450 | Activities: $0", delay: 3200 },
-    { progress: 90, task: "Flight: $1,200 | Hotel: $2,450 | Activities: $670", delay: 2400 },
-    { progress: 95, task: "Optimizing total costs...", delay: 1600 },
-    { progress: 100, task: "Budget optimized ✓", delay: 800, result: "$4,320 total" },
+    { progress: 20, task: "Establishing budget parameters...", delay: 800 },
+    { progress: 45, task: "Analyzing price points across options...", delay: 2400 },
+    { progress: 70, task: "Calculating optimal value scenarios...", delay: 2000 },
+    { progress: 90, task: "Finalizing cost breakdown...", delay: 1600 },
+    { progress: 100, task: "Budget analysis complete ✓", delay: 800, result: "Multiple options prepared" },
   ],
 };
 
@@ -66,7 +66,7 @@ const interAgentMessages: Array<{ from: string; to: string; message: string; del
   { 
     from: "Budget Guardian", 
     to: "Flight Optimizer", 
-    message: "Stay under $1,500 for flights", 
+    message: "Analyzing competitive flight pricing", 
     delay: 3200 
   },
   { 
@@ -84,7 +84,7 @@ const interAgentMessages: Array<{ from: string; to: string; message: string; del
   { 
     from: "Budget Guardian", 
     to: "Itinerary Architect", 
-    message: "Activity budget: $800 max", 
+    message: "Activity budget parameters established", 
     delay: 10000 
   },
   { 
@@ -183,19 +183,21 @@ export class AgentSimulation {
       0
     );
 
-    const flightCost = destFlights[0].price; // Direct Delta flight
-    const hotelCost = destHotels[0].totalPrice; // Resort
-    const foodCost = 0; // Included in all-inclusive
-    const transportCost = 0; // Included
+    const flightCost = destFlights[0].price;
+    const hotelCost = destHotels[0].totalPrice;
+    const foodCost = 0; // Included in all-inclusive packages
+    const transportCost = 0; // Included in packages
 
     const total = flightCost + hotelCost + activitiesCost;
-    const budget = 5000;
+    
+    // Dynamic budget: use user preference if available, otherwise calculate from selections
+    const targetBudget = this.context.preferences?.budget || total;
 
     const budgetStatus: BudgetStatus = {
       allocated: total,
-      budget: budget,
-      remaining: budget - total,
-      status: total < budget * 0.9 ? "under" : total > budget ? "over" : "near",
+      budget: targetBudget,
+      remaining: targetBudget - total,
+      status: total < targetBudget * 0.9 ? "under" : total > targetBudget ? "over" : "near",
       breakdown: {
         flights: flightCost,
         accommodation: hotelCost,

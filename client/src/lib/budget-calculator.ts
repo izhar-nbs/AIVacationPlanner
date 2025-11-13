@@ -1,12 +1,14 @@
-import type { TripPlan, BudgetStatus, Flight, Hotel } from "@shared/schema";
+import type { TripPlan, BudgetStatus, Flight, Hotel, VacationPreferences } from "@shared/schema";
 
 /**
  * Dynamically calculates budget status based on actual selected options
+ * Always computes fresh values - never uses stale plan.budget
  */
 export function calculateBudgetFromSelections(
   plan: TripPlan,
   selectedFlightId: string,
-  selectedHotelId: string
+  selectedHotelId: string,
+  userPreferences?: VacationPreferences
 ): BudgetStatus {
   const selectedFlight = plan.flights.find(f => f.id === selectedFlightId);
   const selectedHotel = plan.hotels.find(h => h.id === selectedHotelId);
@@ -15,24 +17,19 @@ export function calculateBudgetFromSelections(
   const flight = selectedFlight || plan.flights[0];
   const hotel = selectedHotel || plan.hotels[0];
   
-  if (!flight || !hotel) {
-    // Deep clone plan budget as last resort
-    return {
-      ...plan.budget,
-      breakdown: { ...plan.budget.breakdown }
-    };
-  }
-  
-  // Calculate individual costs
-  const flightCost = flight.price;
-  const accommodationCost = hotel.totalPrice;
+  // Calculate individual costs - ALWAYS compute fresh (treat missing as 0)
+  const flightCost = flight?.price || 0;
+  const accommodationCost = hotel?.totalPrice || 0;
   const activitiesCost = calculateActivitiesCost(plan);
   const foodCost = calculateFoodCost(plan);
   const transportCost = calculateTransportCost(plan);
   
   const totalAllocated = flightCost + accommodationCost + activitiesCost + foodCost + transportCost;
-  const remaining = plan.budget.budget - totalAllocated;
-  const percentage = (totalAllocated / plan.budget.budget) * 100;
+  
+  // Compute fresh budget ceiling from user preferences or calculate from total (never trust plan.budget)
+  const budgetCeiling = userPreferences?.budget || totalAllocated;
+  const remaining = budgetCeiling - totalAllocated;
+  const percentage = (totalAllocated / budgetCeiling) * 100;
   
   // Determine status
   let status: "under" | "near" | "over" = "under";
@@ -43,7 +40,7 @@ export function calculateBudgetFromSelections(
   }
   
   return {
-    budget: plan.budget.budget,
+    budget: budgetCeiling, // Fresh computed ceiling, not plan.budget.budget
     allocated: totalAllocated,
     remaining,
     status,

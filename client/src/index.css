@@ -12,84 +12,80 @@
   display: none;
 }
 
-/* LIGHT MODE - Modern Travel Portal Theme */
+/* ENTERPRISE LIGHT MODE - Professional Travel Portal Theme */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --button-outline: rgba(0,0,0, .08);
+  --badge-outline: rgba(0,0,0, .04);
 
   /* Automatic computation of border around primary / danger buttons */
-  --opaque-button-border-intensity: -8; /* In terms of percentages */
+  --opaque-button-border-intensity: -6; /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,0,0, .02);
-  --elevate-2: rgba(0,0,0, .06);
+  --elevate-1: rgba(0,0,0, .015);
+  --elevate-2: rgba(0,0,0, .04);
 
-  --background: 210 20% 98%;
+  /* Refined neutral palette - professional and sophisticated */
+  --background: 210 12% 98%;
+  --foreground: 215 20% 15%;
 
-  --foreground: 215 25% 12%;
-
-  --border: 210 15% 90%;
-
+  /* Subtle borders for enterprise elegance */
+  --border: 210 10% 88%;
+  
+  /* Clean card backgrounds */
   --card: 0 0% 100%;
+  --card-foreground: 215 20% 15%;
+  --card-border: 210 8% 92%;
 
-  --card-foreground: 215 25% 12%;
-
-  --card-border: 210 12% 94%;
-
-  --sidebar: 210 18% 97%;
-
-  --sidebar-foreground: 215 25% 12%;
-
-  --sidebar-border: 210 15% 92%;
-
-  --sidebar-primary: 200 95% 48%;
-
+  /* Sidebar neutrals */
+  --sidebar: 210 10% 97%;
+  --sidebar-foreground: 215 20% 15%;
+  --sidebar-border: 210 8% 90%;
+  --sidebar-primary: 215 85% 50%;
   --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 210 12% 93%;
+  --sidebar-accent-foreground: 215 20% 20%;
+  --sidebar-ring: 215 85% 50%;
 
-  --sidebar-accent: 210 20% 94%;
-
-  --sidebar-accent-foreground: 215 25% 15%;
-
-  --sidebar-ring: 200 95% 48%;
-
+  /* Popover styling */
   --popover: 0 0% 100%;
+  --popover-foreground: 215 20% 15%;
+  --popover-border: 210 8% 90%;
 
-  --popover-foreground: 215 25% 12%;
-
-  --popover-border: 210 12% 92%;
-
-  --primary: 200 95% 48%;
-
+  /* Professional primary: Trust blue (enterprise standard) */
+  --primary: 215 85% 50%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 190 80% 45%;
-
+  /* Refined secondary: Sophisticated teal */
+  --secondary: 185 65% 45%;
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 210 18% 96%;
+  /* Muted backgrounds for hierarchy */
+  --muted: 210 12% 95%;
+  --muted-foreground: 215 10% 50%;
 
-  --muted-foreground: 215 12% 45%;
-
-  --accent: 28 90% 58%;
-
+  /* Accent for highlights and success states */
+  --accent: 165 60% 45%;
   --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 85% 50%;
-
+  /* Professional destructive state */
+  --destructive: 0 75% 55%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 210 15% 65%;
-  --ring: 200 95% 48%;
-  --chart-1: 200 95% 48%;
-  --chart-2: 190 80% 45%;
-  --chart-3: 28 90% 58%;
-  --chart-4: 340 80% 55%;
-  --chart-5: 165 70% 45%;
+  /* Form inputs */
+  --input: 210 10% 70%;
+  --ring: 215 85% 50%;
+  
+  /* Chart colors - data visualization palette */
+  --chart-1: 215 85% 50%;
+  --chart-2: 185 65% 45%;
+  --chart-3: 165 60% 45%;
+  --chart-4: 30 85% 55%;
+  --chart-5: 280 60% 55%;
 
-  --font-sans: Inter, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: .75rem; /* 12px - more modern */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, monospace;
+  --radius: .5rem; /* 8px - enterprise standard for compact design */
   --shadow-2xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
   --shadow-xs: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
   --shadow-sm: 0px 2px 4px -1px rgba(0, 0, 0, 0.06), 0px 4px 6px -1px rgba(0, 0, 0, 0.1);

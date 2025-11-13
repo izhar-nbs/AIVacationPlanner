@@ -11,16 +11,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { TripPlan } from "@shared/schema";
+import type { TripPlan, BudgetStatus } from "@shared/schema";
 
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: () => void;
   tripPlan: TripPlan | null;
+  dynamicBudget: BudgetStatus; // Required, not nullable - modal should not open without it
 }
 
-export function CheckoutModal({ isOpen, onClose, onComplete, tripPlan }: CheckoutModalProps) {
+export function CheckoutModal({ isOpen, onClose, onComplete, tripPlan, dynamicBudget }: CheckoutModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
@@ -85,8 +86,11 @@ export function CheckoutModal({ isOpen, onClose, onComplete, tripPlan }: Checkou
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t border-border">
                       <span className="text-sm font-semibold text-foreground">Total</span>
-                      <span className="text-xl font-bold text-primary">
-                        ${tripPlan.budget.allocated.toLocaleString()}
+                      <span 
+                        className="text-xl font-bold text-primary"
+                        data-testid="text-modal-total"
+                      >
+                        ${dynamicBudget.allocated.toLocaleString()}
                       </span>
                     </div>
                   </div>

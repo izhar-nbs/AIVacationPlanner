@@ -163,16 +163,14 @@ export default function VacationPlanner() {
         setTripPlan(plan);
         setPhase("results");
         setIsProcessing(false);
-        // Initialize selections and budget immediately for new plan
+        // Initialize selections and budget immediately for new plan (ALWAYS, never null)
         const initialFlightId = plan.flights[0]?.id || "";
         const initialHotelId = plan.hotels[0]?.id || "";
         setSelectedFlightId(initialFlightId);
         setSelectedHotelId(initialHotelId);
-        // Calculate initial budget synchronously
-        if (initialFlightId && initialHotelId) {
-          const initialBudget = calculateBudgetFromSelections(plan, initialFlightId, initialHotelId);
-          setDynamicBudget(initialBudget);
-        }
+        // Calculate initial budget synchronously - ALWAYS initialize (no conditional)
+        const initialBudget = calculateBudgetFromSelections(plan, initialFlightId, initialHotelId, preferences);
+        setDynamicBudget(initialBudget);
         toast({
           title: "Itinerary Curated!",
           description: `Your bespoke ${plan.destination.name} getaway is ready for review.`,
@@ -233,16 +231,14 @@ export default function VacationPlanner() {
         setPhase("results");
         setShowComparison(true);
         setIsProcessing(false);
-        // Reset selections and budget for refined plan
+        // Reset selections and budget for refined plan (ALWAYS, unconditional)
         const refinedFlightId = refinedPlan.flights[0]?.id || "";
         const refinedHotelId = refinedPlan.hotels[0]?.id || "";
         setSelectedFlightId(refinedFlightId);
         setSelectedHotelId(refinedHotelId);
-        // Calculate initial budget synchronously
-        if (refinedFlightId && refinedHotelId) {
-          const refinedBudget = calculateBudgetFromSelections(refinedPlan, refinedFlightId, refinedHotelId);
-          setDynamicBudget(refinedBudget);
-        }
+        // Calculate budget synchronously - ALWAYS update (no conditional)
+        const refinedBudget = calculateBudgetFromSelections(refinedPlan, refinedFlightId, refinedHotelId, preferences);
+        setDynamicBudget(refinedBudget);
         
         toast({
           title: "Itinerary Refined!",
@@ -263,18 +259,18 @@ export default function VacationPlanner() {
 
   const handleFlightSelection = (flightId: string) => {
     setSelectedFlightId(flightId);
-    // Immediately recalculate budget with new selection
-    if (tripPlan && selectedHotelId) {
-      const updatedBudget = calculateBudgetFromSelections(tripPlan, flightId, selectedHotelId);
+    // Immediately recalculate budget with new selection (ALWAYS, unconditional)
+    if (tripPlan) {
+      const updatedBudget = calculateBudgetFromSelections(tripPlan, flightId, selectedHotelId || "", preferences);
       setDynamicBudget(updatedBudget);
     }
   };
 
   const handleHotelSelection = (hotelId: string) => {
     setSelectedHotelId(hotelId);
-    // Immediately recalculate budget with new selection
-    if (tripPlan && selectedFlightId) {
-      const updatedBudget = calculateBudgetFromSelections(tripPlan, selectedFlightId, hotelId);
+    // Immediately recalculate budget with new selection (ALWAYS, unconditional)
+    if (tripPlan) {
+      const updatedBudget = calculateBudgetFromSelections(tripPlan, selectedFlightId || "", hotelId, preferences);
       setDynamicBudget(updatedBudget);
     }
   };
@@ -293,43 +289,44 @@ export default function VacationPlanner() {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Modern Premium Header */}
-      <header className="border-b border-border bg-white/80 backdrop-blur-md sticky top-0 z-50 flex-shrink-0 shadow-sm">
-        <div className="max-w-[1800px] mx-auto px-6 py-4">
+      {/* Enterprise Header - Compact & Professional */}
+      <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 flex-shrink-0">
+        <div className="max-w-[1920px] mx-auto px-4 py-2.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
-                <Sparkles className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">NorthBay</span>
-                  <span className="text-muted-foreground font-medium text-base">AI Travel</span>
+                <h1 className="text-base font-semibold text-foreground tracking-tight">
+                  <span className="text-primary">NorthBay</span>
+                  <span className="text-muted-foreground font-normal text-sm ml-1.5">AI Travel Concierge</span>
                 </h1>
-                <p className="text-xs text-muted-foreground font-medium">
-                  Multi-Agent Vacation Planning
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                  Enterprise-Grade AI Orchestration
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {isProcessing && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/5 border border-primary/15"
                 >
-                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
-                  <span className="font-semibold text-primary text-xs">AI Working</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <span className="font-medium text-primary text-[11px] uppercase tracking-wide">Processing</span>
                 </motion.div>
               )}
               {phase === "results" && tripPlan && (
                 <Button
                   onClick={handleCheckout}
                   size="sm"
-                  className="font-semibold shadow-lg hover-elevate active-elevate-2"
+                  className="font-semibold text-xs h-8 hover-elevate active-elevate-2"
                   data-testid="button-header-checkout"
+                  disabled={!dynamicBudget}
                 >
-                  View Your Trip
+                  Review & Book Trip
                 </Button>
               )}
             </div>
@@ -342,10 +339,10 @@ export default function VacationPlanner() {
         <SuggestionsCarousel onSelectSuggestion={handleSuggestionClick} />
       )}
 
-      {/* Modern 2-Column Layout (65/35 Split) */}
-      <main className="flex-1 flex overflow-hidden max-w-[1800px] mx-auto w-full">
-        {/* Left Column - Chat & Results (65%) */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6 bg-gradient-to-b from-background to-muted/10">
+      {/* Enterprise 2-Column Layout - Compact & Information-Dense */}
+      <main className="flex-1 flex overflow-hidden max-w-[1920px] mx-auto w-full">
+        {/* Left Column - Chat & Results (~68%) */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gradient-to-b from-background via-background to-muted/5">
           {phase === "confirmation" ? (
             <SuccessConfirmation tripPlan={tripPlan} />
           ) : (
@@ -395,9 +392,9 @@ export default function VacationPlanner() {
           )}
         </div>
 
-        {/* Right Column - Sticky Agent Dashboard (35%) */}
-        <div className="w-[35%] flex-shrink-0 hidden lg:flex flex-col border-l border-border bg-gradient-to-b from-white/80 to-muted/30 backdrop-blur-sm">
-          <div className="sticky top-0 h-screen overflow-y-auto p-6 space-y-5">
+        {/* Right Column - Sticky Agent Dashboard (~32%) */}
+        <div className="w-[32%] flex-shrink-0 hidden lg:flex flex-col border-l border-border bg-white/90 backdrop-blur-sm">
+          <div className="sticky top-0 h-screen overflow-y-auto p-4 space-y-3.5">
             {/* Budget Tracker - Dynamic */}
             {dynamicBudget && (
               <BudgetTracker budget={dynamicBudget} />
@@ -415,13 +412,16 @@ export default function VacationPlanner() {
         </div>
       </main>
 
-      {/* Checkout Modal */}
-      <CheckoutModal
-        isOpen={showCheckout}
-        onClose={() => setShowCheckout(false)}
-        onComplete={handlePaymentComplete}
-        tripPlan={tripPlan}
-      />
+      {/* Checkout Modal - Only render when dynamicBudget is available */}
+      {dynamicBudget && (
+        <CheckoutModal
+          isOpen={showCheckout}
+          onClose={() => setShowCheckout(false)}
+          onComplete={handlePaymentComplete}
+          tripPlan={tripPlan}
+          dynamicBudget={dynamicBudget}
+        />
+      )}
     </div>
   );
 }
