@@ -2,9 +2,7 @@
 
 ## Overview
 
-This is a professional demo application showcasing AI agent orchestration for vacation planning. The system simulates 5 autonomous AI agents working in parallel to plan complete vacations in approximately 5 minutes, demonstrating what traditionally takes 10+ hours of manual research. Built as a single-page application, it features a conversational chat interface, real-time multi-agent visualization, and comprehensive trip planning results with booking capabilities.
-
-The application is designed as an enterprise-grade demo with a focus on "WOW factor" through polished animations, visual feedback, and seamless user interactions. It uses mock data throughout - no actual API calls or real booking functionality.
+This project is an enterprise-grade demo application showcasing AI agent orchestration for vacation planning. It simulates 5 autonomous AI agents working in parallel to generate comprehensive vacation plans in minutes, a process that traditionally takes hours of manual research. The application is a single-page application (SPA) featuring a conversational chat interface, real-time multi-agent visualization, and detailed trip planning results with mock booking capabilities. The primary goal is to demonstrate the "WOW factor" of AI orchestration through polished UI, animations, and seamless user experience, acting as a professional demo for client presentations.
 
 ## User Preferences
 
@@ -12,247 +10,81 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
-
-**Framework**: React with TypeScript, using a single-page application (SPA) pattern via Wouter for routing.
-
-**UI Component System**: Shadcn UI components (New York style) built on Radix UI primitives, providing accessible, production-ready components with Tailwind CSS styling. All components follow a consistent design system with defined color palettes, spacing units, and typography hierarchy.
-
-**Animation Strategy**: Framer Motion for all animations and transitions. Key animation patterns include:
-- Smooth phase transitions (input → processing → results → checkout)
-- Real-time agent progress visualization with staggered animations
-- Budget tracker with animated counters and progress bars
-- Success states with celebration animations
-
-**State Management**: Local React state with hooks. No global state management library is used - state flows through props from the main `VacationPlanner` page component to child components. Agent simulation state is managed via a singleton `AgentSimulation` class instantiated with `useRef`.
-
-**Design System**: Tailwind CSS with custom configuration extending the Shadcn theme:
-- HSL-based color system for light/dark mode support
-- Custom elevation utilities (`elevate-1`, `elevate-2`) for hover/active states
-- Consistent spacing scale (2, 4, 6, 8, 12, 16, 20, 24, 32)
-- Typography using modern fonts (Inter/Poppins family)
-- Maximum container width of 1280px for main content
+### Frontend
+- **Framework**: React with TypeScript, utilizing Wouter for SPA routing.
+- **UI Components**: Shadcn UI (New York style) built on Radix UI primitives, styled with Tailwind CSS for a consistent design system.
+- **Animation**: Framer Motion is used for all animations, including phase transitions, real-time agent progress, budget tracking, and success states.
+- **State Management**: Local React state with hooks; agent simulation state managed via a singleton `AgentSimulation` class.
+- **Design System**: Tailwind CSS with custom HSL-based color system for light/dark mode, custom elevation utilities, and modern typography.
 
 ### Application Flow
-
-**Phase-Based Architecture**: The application progresses through distinct phases managed by state:
-
-1. **Input Phase**: Chat-based conversational interface where users describe vacation preferences. AI asks follow-up questions to gather requirements (destination type, budget, duration, departure city, travel month, interests).
-
-2. **Processing Phase**: Multi-agent dashboard showing 5 agents running in parallel:
-   - Destination Scout (finds and ranks destinations)
-   - Flight Optimizer (searches and compares flight options)
-   - Accommodation Finder (scans hotels and resorts)
-   - Itinerary Architect (plans daily activities)
-   - Budget Guardian (continuously monitors spending)
-
-3. **Results Phase**: Tabbed interface displaying comprehensive trip plan including destinations, flights, hotels, and day-by-day itinerary.
-
-4. **Refinement Phase**: Quick-adjust controls for modifying budget, upgrading options, or changing preferences.
-
-5. **Checkout Phase**: Modal overlay with booking form and success confirmation.
+The application progresses through distinct, state-managed phases:
+1.  **Input Phase**: Conversational chat to gather user vacation preferences.
+2.  **Processing Phase**: Multi-agent dashboard visualizing 5 parallel agents (Destination Scout, Flight Optimizer, Accommodation Finder, Itinerary Architect, Budget Guardian) at work.
+3.  **Results Phase**: Tabbed interface displaying the comprehensive trip plan (destinations, flights, hotels, itinerary).
+4.  **Refinement Phase**: Controls for quick adjustments to the plan.
+5.  **Checkout Phase**: Modal for mock booking confirmation.
 
 ### Agent Simulation System
+-   **Design Pattern**: Time-based state machine with a callback architecture using an `AgentSimulation` class to orchestrate agents via `setTimeout` for realistic delays.
+-   **Features**: Agents follow predefined sequences, communicate via callbacks, and the Budget Guardian provides continuous updates. Mock data from `mock-data.ts` is used throughout.
 
-**Design Pattern**: Time-based state machine with callback architecture. The `AgentSimulation` class orchestrates multiple agents using `setTimeout` chains to simulate realistic processing delays.
-
-**Key Features**:
-- Each agent follows a predefined sequence of status updates with specific delays (2-5 seconds per step)
-- Agents run in parallel but can send "messages" to each other (e.g., Destination Scout informs Flight Optimizer of selected destination)
-- Budget Guardian continuously updates throughout the process
-- Inter-agent communication simulated through callback functions
-- Cleanup mechanism to prevent memory leaks when component unmounts
-
-**Mock Data Strategy**: All data (destinations, flights, hotels, activities) is defined in `mock-data.ts`. The simulation system selects and returns this data at appropriate times to create realistic results.
-
-### Backend Architecture
-
-**Express Server**: Minimal Node.js/Express backend primarily serving as a static file server for the built frontend. The `registerRoutes` function is designed to accept API route definitions but currently empty - all functionality is client-side.
-
-**Storage Interface**: Defined but unused `IStorage` interface with `MemStorage` in-memory implementation. This provides a pattern for future database integration but is not utilized in current demo implementation.
-
-**Development Setup**: Vite middleware mode for hot module replacement during development, with custom error logging and request tracking.
+### Backend
+-   **Server**: Minimal Node.js/Express server primarily for serving static frontend files.
+-   **Storage**: An `IStorage` interface with an in-memory `MemStorage` implementation exists, hinting at future database integration, but is unused in the current demo.
 
 ### Data Schema
+-   **TypeScript-First**: Shared schema definitions in `shared/schema.ts` for entities like `ChatMessage`, `Agent`, `VacationPreferences`, `TripPlan`, and `BudgetStatus`.
+-   **Schema Extensions**: `Destination`, `Hotel`, and `Activity` types include optional `coordinates` for map integration.
 
-**TypeScript-First Design**: Shared schema definitions in `shared/schema.ts` used by both frontend and backend (though backend is minimal). Key types include:
-
-- `ChatMessage`: User and AI conversation messages
-- `Agent`: Agent state including progress, status, and result data
-- `VacationPreferences`: User-specified trip requirements
-- `TripPlan`: Complete vacation plan with destinations, flights, hotels, itinerary
-- `BudgetStatus`: Real-time budget tracking with breakdown by category
-
-All types are exported and imported using path aliases (`@shared/*`) configured in both TypeScript and Vite.
+### Core Features
+-   **PDF Export**: Client-side PDF generation of the trip plan using `jspdf`.
+-   **Calendar Export**: `.ics` file generation for itinerary activities using `ics`.
+-   **Interactive Map**: Leaflet-based map (`react-leaflet`) displaying destinations, hotels, and activities with interactive markers.
+-   **Enhanced Agent Communication**: A panel displaying real-time, chronological inter-agent messages.
+-   **Comparison View**: A side-by-side comparison of "Current Plan" vs. "New Plan" during refinement, highlighting changes and price differences.
+-   **UI/UX**: Features a custom circular progress for agents, professional card designs, gradient message bubbles, and a 3-column layout (suggestions, chat/results, agent dashboard) for a premium travel portal aesthetic.
 
 ## External Dependencies
 
 ### UI Component Libraries
-
-- **Radix UI**: Headless component primitives providing accessibility and behavior (Dialog, Accordion, Tabs, Tooltip, Progress, etc.)
-- **Shadcn UI**: Pre-configured Radix components with Tailwind styling following the "New York" design system
-- **Lucide React**: Icon library for consistent iconography throughout the application
-- **Framer Motion**: Animation library for all transitions, gestures, and animated states
+-   **Radix UI**: Headless components for accessibility and behavior.
+-   **Shadcn UI**: Pre-configured Radix components with Tailwind styling.
+-   **Lucide React**: Icon library.
+-   **Framer Motion**: Animation library.
 
 ### Styling and Design
-
-- **Tailwind CSS**: Utility-first CSS framework with custom configuration for theme variables
-- **class-variance-authority**: Type-safe variant API for component styling
-- **tailwind-merge & clsx**: Utility for merging Tailwind classes without conflicts
+-   **Tailwind CSS**: Utility-first CSS framework.
+-   **class-variance-authority**: Type-safe variant API for styling.
+-   **tailwind-merge & clsx**: Utilities for merging Tailwind classes.
 
 ### Chart Visualization
-
-- **Recharts**: Chart library used in BudgetTracker for pie chart visualization of budget breakdown
+-   **Recharts**: Used for pie chart visualization in the BudgetTracker.
 
 ### Form Handling
+-   **React Hook Form**: Form state management and validation.
+-   **Zod**: Schema validation.
+-   **@hookform/resolvers**: Integration between React Hook Form and Zod.
 
-- **React Hook Form**: Form state management and validation
-- **Zod**: Schema validation for form data
-- **@hookform/resolvers**: Integration between React Hook Form and Zod
+### Mapping
+-   **Leaflet (react-leaflet)**: Interactive map library for displaying geographical data.
+
+### PDF and Calendar Export
+-   **jspdf**: Client-side PDF generation.
+-   **ics**: RFC 5545 compliant calendar file generation.
 
 ### Database (Configured but Unused)
-
-- **Drizzle ORM**: TypeScript ORM configured for PostgreSQL
-- **@neondatabase/serverless**: Neon Postgres driver (referenced in package.json)
-- **drizzle-zod**: Integration for generating Zod schemas from Drizzle schemas
-
-Note: While database tooling is configured (drizzle.config.ts, schema imports), the application currently uses only in-memory mock data. The database configuration suggests future capability for persisting trip plans or user sessions.
+-   **Drizzle ORM**: TypeScript ORM for PostgreSQL.
+-   **@neondatabase/serverless**: Neon Postgres driver.
+-   **drizzle-zod**: Zod schema generation from Drizzle schemas.
 
 ### Development Tools
+-   **Vite**: Build tool and development server.
+-   **TypeScript**: For type safety.
+-   **Wouter**: Lightweight routing library.
+-   **@tanstack/react-query**: Data fetching and caching (minimal usage).
 
-- **Vite**: Build tool and development server with React plugin
-- **TypeScript**: Type safety throughout the application
-- **Wouter**: Lightweight routing library (though app is primarily single-page)
-- **@tanstack/react-query**: Data fetching and caching library (configured but minimal usage given mock data approach)
-
-### Replit-Specific Plugins
-
-- **@replit/vite-plugin-runtime-error-modal**: Development error overlay
-- **@replit/vite-plugin-cartographer**: Code navigation helper
-- **@replit/vite-plugin-dev-banner**: Development environment banner
-
-These plugins are conditionally loaded only in development mode on Replit environment.
-
-## Recent Changes (November 3, 2025)
-
-### NorthBay Corporate Rebrand & 3-Column Layout
-**Branding Update**: Changed from "luxury travel" theme to professional NorthBay Solutions corporate identity matching their AWS Premier Partner branding:
-- **Colors**: NorthBay blue primary (#0066FF / HSL 210 100% 50%), professional gray secondary
-- **Header**: Updated to "NorthBay Solutions | AI Multi-Agent Travel Planner Demo"
-- **Logo**: Blue NorthBay icon with Sparkles
-- **Theme**: AWS-inspired professional blue aesthetic instead of ocean/sunset colors
-
-**Critical Bug Fix - Chat Hanging**: Completely rewrote chat interface logic to prevent hanging bug:
-- Chat now ALWAYS responds to user messages (no step limit)
-- Removed broken conversation step limitation
-- Chat responds appropriately at any point in conversation
-- Prevents embarrassing "frozen chat" scenario on client demo
-
-**3-Column Layout Restructure** (Major Architectural Change):
-- **Left Sidebar (w-80)**: Suggestions sidebar with quick-start travel templates
-  - Popular destinations (Tropical, European, Mountain, Romantic)
-  - Category cards (Family, Business, Weekend, Adventure)
-  - Clicking suggestions auto-populates chat
-- **Center Column (flex-1)**: Chat interface + results (always visible)
-  - Chat never hidden
-  - Results render below chat when available
-- **Right Sidebar (w-96)**: Always-visible agent dashboard
-  - Agents start as "idle" and become active during planning
-  - Budget tracker appears above agents
-  - No separate "processing" phase - agents visible throughout
-
-**Components Created**:
-- `SuggestionsSidebar` - Quick start templates with category organization
-
-**Files Modified**:
-- `client/src/pages/vacation-planner.tsx` - Complete restructure to 3-column layout
-- `client/src/components/vacation/chat-interface.tsx` - Fixed critical hanging bug
-- `client/src/index.css` - Updated to NorthBay corporate colors
-- `design_guidelines.md` - Regenerated for NorthBay corporate theme
-
-## Recent Features (November 2025)
-
-### PDF Export
-- **Library**: jspdf for client-side PDF generation
-- **Location**: `client/src/lib/pdf-export.ts`
-- **Integration**: Download PDF button in ResultsPresentation header
-- **Functionality**: Generates professional PDF with complete trip plan including destination details, flight information, hotel booking, and full 7-day itinerary with activities
-- **User Experience**: One-click download with toast notification
-
-### Calendar Export (.ics)
-- **Library**: ics for RFC 5545 compliant calendar file generation
-- **Location**: `client/src/lib/calendar-export.ts`
-- **Integration**: Add to Calendar button in ResultsPresentation header
-- **Functionality**: Converts all itinerary activities into calendar events with proper dates, times, locations, and descriptions
-- **Compatibility**: Works with Google Calendar, Outlook, Apple Calendar, and other standard calendar applications
-
-### Interactive Map
-- **Library**: Leaflet (react-leaflet v4.2.1) - free, no API key required
-- **Location**: `client/src/components/vacation/map-view.tsx`
-- **Integration**: Expandable/collapsible card in ResultsPresentation
-- **Schema Changes**: Extended Destination (required coordinates), Hotel (optional coordinates), Activity (optional coordinates) with lat/lng properties
-- **Mock Data**: Updated destinations and hotels with real geographic coordinates
-- **Features**:
-  - Blue markers for destination center
-  - Red markers for selected hotel
-  - Green markers for activity locations
-  - Interactive popups with location details
-  - Legend showing marker types and counts
-  - Graceful fallbacks when coordinates missing (generates offset markers)
-  - OpenStreetMap tiles (free, no attribution required beyond standard OSM credit)
-
-### Enhanced Agent Communication
-- **Location**: `client/src/components/vacation/multi-agent-dashboard.tsx`
-- **Integration**: Expandable "Agent Communications" panel in multi-agent dashboard
-- **Features**:
-  - Chronological display of inter-agent messages
-  - Sender/receiver badges with color coding
-  - Message timestamps
-  - Expandable thread (shows first 3, can expand to see all)
-  - Animated message appearance with stagger effect
-  - Real-time updates as agents communicate during processing
-
-### Comparison View
-- **Location**: `client/src/components/vacation/comparison-view.tsx`
-- **Integration**: Displayed during refinement phase when user modifies plan
-- **Features**:
-  - Side-by-side layout showing "Current Plan" vs "New Plan"
-  - Price comparison with delta highlighting (green for savings, red for increases)
-  - Key changes section with bullet points
-  - Visual diff for destination, flight, hotel changes
-  - Seamless transition animations
-
-### Schema Extensions
-
-**Coordinates Support**: To enable the interactive map feature, the following schema updates were made in `shared/schema.ts`:
-
-```typescript
-// Destination now requires coordinates
-export interface Destination {
-  // ... existing fields
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-}
-
-// Hotel can optionally include coordinates
-export interface Hotel {
-  // ... existing fields
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
-}
-
-// Activities can optionally include coordinates
-export interface Activity {
-  // ... existing fields
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
-}
-```
-
-**Design Principle**: Coordinates are required for destinations (as the main trip anchor point) but optional for hotels and activities to allow flexibility in mock data and future data ingestion. The MapView component includes intelligent fallbacks that generate offset coordinates when hotel/activity coordinates are missing.
+### Replit-Specific Plugins (Development Only)
+-   **@replit/vite-plugin-runtime-error-modal**
+-   **@replit/vite-plugin-cartographer**
+-   **@replit/vite-plugin-dev-banner**
