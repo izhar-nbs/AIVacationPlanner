@@ -163,13 +163,16 @@ export default function VacationPlanner() {
         setTripPlan(plan);
         setPhase("results");
         setIsProcessing(false);
-        // Initialize selections and budget immediately for new plan (ALWAYS, never null)
-        const initialFlightId = plan.flights[0]?.id || "";
-        const initialHotelId = plan.hotels[0]?.id || "";
+        // Initialize selections with recommended options based on budget tier (or fallback to first)
+        const recommendedFlight = plan.flights.find(f => f.recommended) || plan.flights[0];
+        const recommendedHotel = plan.hotels.find(h => h.recommended) || plan.hotels[0];
+        const initialFlightId = recommendedFlight?.id || "";
+        const initialHotelId = recommendedHotel?.id || "";
         setSelectedFlightId(initialFlightId);
         setSelectedHotelId(initialHotelId);
         // Calculate initial budget synchronously - ALWAYS initialize (no conditional)
-        const initialBudget = calculateBudgetFromSelections(plan, initialFlightId, initialHotelId, preferences);
+        // Use enrichedPrefs directly to avoid state update timing issues
+        const initialBudget = calculateBudgetFromSelections(plan, initialFlightId, initialHotelId, enrichedPrefs);
         setDynamicBudget(initialBudget);
         toast({
           title: "Itinerary Curated!",

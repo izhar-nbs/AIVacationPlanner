@@ -417,23 +417,13 @@ export function generateItinerary() {
 /**
  * Generate destination-specific flights and hotels
  */
-export function generateDestinationData(destination: Destination) {
-  // Generate flights for the destination
-  const destinationFlights: Flight[] = [
-    {
-      id: `direct-premium-${destination.id}`,
-      airline: "Delta Airlines",
-      departureCity: "New York (JFK)",
-      arrivalCity: `${destination.name}`,
-      departureTime: "8:00 AM",
-      arrivalTime: "12:15 PM",
-      duration: "4h 15m",
-      price: 1200,
-      stops: 0,
-      class: "economy",
-      recommended: true,
-      tradeoffs: "Optimal choice - nonstop service with convenient departure times",
-    },
+export function generateDestinationData(destination: Destination, userBudget: number = 5000) {
+  // Determine budget tier
+  const budgetTier = userBudget >= 8000 ? 'luxury' : userBudget >= 3000 ? 'mid' : 'economy';
+  
+  // Generate budget-appropriate flights
+  const allFlights: Flight[] = [
+    // Economy options (always include for flexibility)
     {
       id: `budget-${destination.id}`,
       airline: "Spirit Airlines",
@@ -442,10 +432,25 @@ export function generateDestinationData(destination: Destination) {
       departureTime: "6:00 AM",
       arrivalTime: "2:45 PM",
       duration: "7h 45m",
-      price: 850,
+      price: budgetTier === 'economy' ? 450 : 850,
       stops: 1,
       class: "economy",
-      tradeoffs: "Saves $350 but adds 3.5 hours with one layover",
+      recommended: budgetTier === 'economy',
+      tradeoffs: budgetTier === 'economy' ? "Best value option with acceptable layover time" : "Saves money but adds 3.5 hours with one layover",
+    },
+    {
+      id: `direct-premium-${destination.id}`,
+      airline: "Delta Airlines",
+      departureCity: "New York (JFK)",
+      arrivalCity: `${destination.name}`,
+      departureTime: "8:00 AM",
+      arrivalTime: "12:15 PM",
+      duration: "4h 15m",
+      price: budgetTier === 'economy' ? 750 : budgetTier === 'mid' ? 1200 : 1400,
+      stops: 0,
+      class: "economy",
+      recommended: budgetTier === 'mid',
+      tradeoffs: "Optimal choice - nonstop service with convenient departure times",
     },
     {
       id: `premium-business-${destination.id}`,
@@ -455,67 +460,23 @@ export function generateDestinationData(destination: Destination) {
       departureTime: "10:00 AM",
       arrivalTime: "2:30 PM",
       duration: "4h 30m",
-      price: 2100,
+      price: budgetTier === 'luxury' ? 2800 : 2100,
       stops: 0,
       class: "business",
+      recommended: budgetTier === 'luxury',
       tradeoffs: "Premium comfort with lie-flat seats and priority boarding",
     },
   ];
 
-  // Generate hotels for the destination
-  const destinationHotels: Hotel[] = [
-    {
-      id: `luxury-resort-${destination.id}`,
-      name: `${destination.name} Grand Resort`,
-      imageUrl: destination.imageUrl,
-      stars: 5,
-      pricePerNight: 350,
-      totalPrice: 2450,
-      amenities: ["All-Inclusive Premium", "Beachfront", "Full-Service Spa", "Signature Dining", "Infinity Pools"],
-      rating: 4.8,
-      reviewCount: 3247,
-      aiReasoning: `Sophisticated luxury sanctuary ideal for discerning travelers. Comprehensive all-inclusive experience with gourmet dining, premium amenities, and curated activities.`,
-      location: `Prime Location, ${destination.name}`,
-      type: "Luxury All-Inclusive Resort",
-      coordinates: destination.coordinates,
-    },
-    {
-      id: `boutique-hotel-${destination.id}`,
-      name: `${destination.name} Boutique Hotel`,
-      imageUrl: destination.imageUrl,
-      stars: 4,
-      pricePerNight: 220,
-      totalPrice: 1540,
-      amenities: ["Rooftop Pool", "Spa Services", "Fine Dining", "Concierge"],
-      rating: 4.6,
-      reviewCount: 1852,
-      aiReasoning: `Charming boutique property offering personalized service and authentic local character at excellent value.`,
-      location: `City Center, ${destination.name}`,
-      type: "Boutique Hotel",
-      coordinates: destination.coordinates,
-    },
-    {
-      id: `luxury-villa-${destination.id}`,
-      name: `${destination.name} Private Villas`,
-      imageUrl: destination.imageUrl,
-      stars: 5,
-      pricePerNight: 550,
-      totalPrice: 3850,
-      amenities: ["Private Pool", "Butler Service", "Chef Available", "Beachfront", "Spa"],
-      rating: 4.9,
-      reviewCount: 892,
-      aiReasoning: `Ultra-luxury private villas offering unparalleled privacy and bespoke service. Perfect for discerning travelers seeking exclusive experiences.`,
-      location: `Exclusive Area, ${destination.name}`,
-      type: "Luxury Villa",
-      coordinates: destination.coordinates,
-    },
+  // Generate budget-appropriate hotels
+  const allHotels: Hotel[] = [
     {
       id: `budget-friendly-${destination.id}`,
       name: `${destination.name} Comfort Inn`,
       imageUrl: destination.imageUrl,
       stars: 3,
-      pricePerNight: 150,
-      totalPrice: 1050,
+      pricePerNight: budgetTier === 'economy' ? 95 : 150,
+      totalPrice: budgetTier === 'economy' ? 665 : 1050,
       amenities: ["Pool", "Restaurant", "Free WiFi", "Gym"],
       rating: 4.2,
       reviewCount: 2156,
@@ -523,11 +484,60 @@ export function generateDestinationData(destination: Destination) {
       location: `Near Airport, ${destination.name}`,
       type: "Standard Hotel",
       coordinates: destination.coordinates,
+      recommended: budgetTier === 'economy',
+    },
+    {
+      id: `boutique-hotel-${destination.id}`,
+      name: `${destination.name} Boutique Hotel`,
+      imageUrl: destination.imageUrl,
+      stars: 4,
+      pricePerNight: budgetTier === 'economy' ? 180 : budgetTier === 'mid' ? 220 : 280,
+      totalPrice: budgetTier === 'economy' ? 1260 : budgetTier === 'mid' ? 1540 : 1960,
+      amenities: ["Rooftop Pool", "Spa Services", "Fine Dining", "Concierge"],
+      rating: 4.6,
+      reviewCount: 1852,
+      aiReasoning: `Charming boutique property offering personalized service and authentic local character at excellent value.`,
+      location: `City Center, ${destination.name}`,
+      type: "Boutique Hotel",
+      coordinates: destination.coordinates,
+      recommended: budgetTier === 'mid',
+    },
+    {
+      id: `luxury-resort-${destination.id}`,
+      name: `${destination.name} Grand Resort`,
+      imageUrl: destination.imageUrl,
+      stars: 5,
+      pricePerNight: budgetTier === 'mid' ? 320 : 400,
+      totalPrice: budgetTier === 'mid' ? 2240 : 2800,
+      amenities: ["All-Inclusive Premium", "Beachfront", "Full-Service Spa", "Signature Dining", "Infinity Pools"],
+      rating: 4.8,
+      reviewCount: 3247,
+      aiReasoning: `Sophisticated luxury sanctuary ideal for discerning travelers. Comprehensive all-inclusive experience with gourmet dining, premium amenities, and curated activities.`,
+      location: `Prime Location, ${destination.name}`,
+      type: "Luxury All-Inclusive Resort",
+      coordinates: destination.coordinates,
+      recommended: false,
+    },
+    {
+      id: `luxury-villa-${destination.id}`,
+      name: `${destination.name} Private Villas`,
+      imageUrl: destination.imageUrl,
+      stars: 5,
+      pricePerNight: budgetTier === 'luxury' ? 650 : 550,
+      totalPrice: budgetTier === 'luxury' ? 4550 : 3850,
+      amenities: ["Private Pool", "Butler Service", "Chef Available", "Beachfront", "Spa"],
+      rating: 4.9,
+      reviewCount: 892,
+      aiReasoning: `Ultra-luxury private villas offering unparalleled privacy and bespoke service. Perfect for discerning travelers seeking exclusive experiences.`,
+      location: `Exclusive Area, ${destination.name}`,
+      type: "Luxury Villa",
+      coordinates: destination.coordinates,
+      recommended: budgetTier === 'luxury',
     },
   ];
 
   return {
-    flights: destinationFlights,
-    hotels: destinationHotels,
+    flights: allFlights,
+    hotels: allHotels,
   };
 }

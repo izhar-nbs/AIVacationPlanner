@@ -174,8 +174,13 @@ export class AgentSimulation {
 
   private generateTripPlan(): TripPlan {
     const destination = this.context.destination; // Use dynamic destination
-    const { flights: destFlights, hotels: destHotels } = generateDestinationData(destination);
+    const userBudget = this.context.preferences?.budget || 5000;
+    const { flights: destFlights, hotels: destHotels } = generateDestinationData(destination, userBudget);
     const itinerary = generateItinerary();
+    
+    // Select recommended options based on budget tier (or fallback to first)
+    const recommendedFlight = destFlights.find(f => f.recommended) || destFlights[0];
+    const recommendedHotel = destHotels.find(h => h.recommended) || destHotels[0];
     
     // Calculate total activity costs
     const activitiesCost = itinerary.days.reduce(
@@ -183,8 +188,8 @@ export class AgentSimulation {
       0
     );
 
-    const flightCost = destFlights[0].price;
-    const hotelCost = destHotels[0].totalPrice;
+    const flightCost = recommendedFlight.price;
+    const hotelCost = recommendedHotel.totalPrice;
     const foodCost = 0; // Included in all-inclusive packages
     const transportCost = 0; // Included in packages
 
@@ -212,9 +217,9 @@ export class AgentSimulation {
       id: Date.now().toString(),
       destination,
       flights: destFlights,
-      selectedFlight: destFlights[0],
+      selectedFlight: recommendedFlight,
       hotels: destHotels,
-      selectedHotel: destHotels[0],
+      selectedHotel: recommendedHotel,
       itinerary,
       budget: budgetStatus,
       createdAt: new Date(),
@@ -227,7 +232,7 @@ export class AgentSimulation {
   }
 }
 
-// Refinement simulation
+// Refinement simulation - simplified (direct selection UI handles budget-aware refinements)
 export async function simulateRefinement(
   currentPlan: TripPlan,
   refinementType: string
@@ -235,58 +240,9 @@ export async function simulateRefinement(
   // Simulate processing delay (optimized for fast demo)
   await new Promise(resolve => setTimeout(resolve, 3000));
 
-  const newPlan = { ...currentPlan };
-
-  switch (refinementType) {
-    case "cheaper":
-      // Switch to budget hotel
-      newPlan.selectedHotel = hotels[2]; // Secrets Moxché
-      newPlan.hotels = hotels;
-      newPlan.budget = {
-        ...currentPlan.budget,
-        allocated: currentPlan.budget.allocated - 490,
-        remaining: currentPlan.budget.remaining + 490,
-        breakdown: {
-          ...currentPlan.budget.breakdown,
-          accommodation: hotels[2].totalPrice,
-          total: currentPlan.budget.breakdown.total - 490,
-        },
-      };
-      break;
-
-    case "upgrade":
-      // Switch to Ritz-Carlton
-      newPlan.selectedHotel = hotels[1];
-      newPlan.hotels = hotels;
-      newPlan.budget = {
-        ...currentPlan.budget,
-        allocated: currentPlan.budget.allocated + 700,
-        remaining: currentPlan.budget.remaining - 700,
-        status: "near",
-        breakdown: {
-          ...currentPlan.budget.breakdown,
-          accommodation: hotels[1].totalPrice,
-          total: currentPlan.budget.breakdown.total + 700,
-        },
-      };
-      break;
-
-    case "change_destination":
-      // Switch to Bali (would need Bali-specific data in real implementation)
-      newPlan.destination = destinations[1] || destinations[0];
-      break;
-
-    case "more_activities":
-      // Increase activity pacing
-      newPlan.itinerary = {
-        ...currentPlan.itinerary,
-        pacing: {
-          activities: 60,
-          relaxation: 40,
-        },
-      };
-      break;
-  }
-
-  return newPlan;
+  // Note: Refinements now handled through direct flight/hotel selection in UI
+  // This maintains the same plan and lets the dynamic budget calculator handle updates
+  // Users can manually select different flight/hotel options which triggers instant recalculation
+  
+  return currentPlan;
 }

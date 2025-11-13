@@ -10,6 +10,27 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### November 13, 2025 - Budget-Responsive System (Latest)
+-   **Layered Budget Extraction**: Multi-pattern regex with validation for robust budget parsing.
+    -   Explicit patterns ($5,000 | $5000 | 5000), dollar signs, and fallback to largest number ≥$500.
+    -   Validates range $500-$100,000 with comprehensive console logging for debugging.
+    -   Fixes edge cases where budget wasn't extracted from natural language input.
+-   **Three-Tier Budget System**: Dynamic pricing and selection based on user budget.
+    -   **Economy (<$3,000)**: Spirit flights $450, Comfort Inn $665, activities 50%, dining $50/day, transport $20/day.
+    -   **Mid ($3,000-$8,000)**: Delta flights $1,200, Boutique hotels $1,540, activities 75%, dining $80/day, transport $30/day.
+    -   **Luxury (>$8,000)**: Business flights $2,800, Private villas $4,550, activities 100%, dining $120/day, transport $50/day.
+-   **Intelligent Recommendation System**: Automatically selects tier-appropriate options.
+    -   Flights and hotels marked with `recommended` field based on budget tier.
+    -   Initial selections use `find(f => f.recommended)` instead of always picking first option.
+    -   Ensures economy budgets get economy defaults, luxury budgets get luxury defaults.
+-   **Realistic Budget Status Thresholds**: Adjusted for travel planning realism.
+    -   Under budget: <90%, Near budget: 90-115%, Over budget: >115%.
+    -   Accounts for typical travel cost variability while maintaining budget awareness.
+-   **Budget Ceiling Fix**: Preferences passed directly to avoid React state timing issues.
+    -   Uses `enrichedPrefs` parameter instead of `preferences` state on line 176.
+    -   Budget Tracker now correctly shows "Allocated / Ceiling" format (e.g., "$2,257 / $2,000").
+-   **Fully Verified**: E2E tests confirm both economy ($2,000 → $2,257 total) and luxury ($10,000 → $9,845 total) tiers work correctly.
+
 ### November 13, 2025 - Demo-Ready Enterprise Transformation
 -   **Professional Typography System**: Migrated to Inter font family with refined hierarchy for enterprise readability.
     -   Compact font sizes: base/sm/xs for information density, uppercase tracking for data labels.

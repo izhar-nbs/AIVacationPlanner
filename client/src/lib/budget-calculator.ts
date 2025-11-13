@@ -20,9 +20,9 @@ export function calculateBudgetFromSelections(
   // Calculate individual costs - ALWAYS compute fresh (treat missing as 0)
   const flightCost = flight?.price || 0;
   const accommodationCost = hotel?.totalPrice || 0;
-  const activitiesCost = calculateActivitiesCost(plan);
-  const foodCost = calculateFoodCost(plan);
-  const transportCost = calculateTransportCost(plan);
+  const activitiesCost = calculateActivitiesCost(plan, userPreferences?.budget);
+  const foodCost = calculateFoodCost(plan, userPreferences?.budget);
+  const transportCost = calculateTransportCost(plan, userPreferences?.budget);
   
   const totalAllocated = flightCost + accommodationCost + activitiesCost + foodCost + transportCost;
   
@@ -31,11 +31,11 @@ export function calculateBudgetFromSelections(
   const remaining = budgetCeiling - totalAllocated;
   const percentage = (totalAllocated / budgetCeiling) * 100;
   
-  // Determine status
+  // Determine status with realistic thresholds for demo
   let status: "under" | "near" | "over" = "under";
-  if (percentage >= 100) {
+  if (percentage >= 115) {  // Over 15% budget = truly over
     status = "over";
-  } else if (percentage >= 90) {
+  } else if (percentage >= 90) {  // Within 10-15% = near budget
     status = "near";
   }
   
@@ -56,40 +56,53 @@ export function calculateBudgetFromSelections(
 }
 
 /**
- * Calculate estimated activities cost based on itinerary
+ * Calculate estimated activities cost based on itinerary and budget tier
  */
-function calculateActivitiesCost(plan: TripPlan): number {
+function calculateActivitiesCost(plan: TripPlan, userBudget?: number): number {
+  const budget = userBudget || 5000;
+  const budgetTier = budget >= 8000 ? 'luxury' : budget >= 3000 ? 'mid' : 'economy';
+  
   // Sum all activity costs from the itinerary
-  let total = 0;
+  let rawTotal = 0;
   plan.itinerary.days.forEach(day => {
     day.activities.forEach(activity => {
       if (activity.cost) {
-        total += activity.cost;
+        rawTotal += activity.cost;
       }
     });
   });
   
-  // If no activity costs defined, estimate based on destination and duration
-  if (total === 0) {
-    const dailyActivityBudget = 100; // $100/day baseline
-    total = plan.itinerary.days.length * dailyActivityBudget;
+  // Scale activity costs based on budget tier
+  const scaleFactor = budgetTier === 'economy' ? 0.5 : budgetTier === 'mid' ? 0.75 : 1.0;
+  const scaledTotal = rawTotal * scaleFactor;
+  
+  // If no activity costs or after scaling is 0, use tier-appropriate daily budget
+  if (scaledTotal === 0) {
+    const dailyActivityBudget = budgetTier === 'economy' ? 50 : budgetTier === 'mid' ? 80 : 120;
+    return plan.itinerary.days.length * dailyActivityBudget;
   }
   
-  return total;
+  return scaledTotal;
 }
 
 /**
- * Calculate estimated food cost
+ * Calculate estimated food cost based on budget tier
  */
-function calculateFoodCost(plan: TripPlan): number {
-  const dailyFoodBudget = 80; // $80/day for meals
+function calculateFoodCost(plan: TripPlan, userBudget?: number): number {
+  const budget = userBudget || 5000;
+  const budgetTier = budget >= 8000 ? 'luxury' : budget >= 3000 ? 'mid' : 'economy';
+  
+  const dailyFoodBudget = budgetTier === 'economy' ? 50 : budgetTier === 'mid' ? 80 : 120;
   return plan.itinerary.days.length * dailyFoodBudget;
 }
 
 /**
- * Calculate local transport cost
+ * Calculate local transport cost based on budget tier
  */
-function calculateTransportCost(plan: TripPlan): number {
-  const dailyTransportBudget = 30; // $30/day for local transport
+function calculateTransportCost(plan: TripPlan, userBudget?: number): number {
+  const budget = userBudget || 5000;
+  const budgetTier = budget >= 8000 ? 'luxury' : budget >= 3000 ? 'mid' : 'economy';
+  
+  const dailyTransportBudget = budgetTier === 'economy' ? 20 : budgetTier === 'mid' ? 30 : 50;
   return plan.itinerary.days.length * dailyTransportBudget;
 }

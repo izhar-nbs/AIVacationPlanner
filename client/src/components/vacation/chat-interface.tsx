@@ -39,16 +39,50 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
     onSendMessage(userMessage);
     setInput("");
     
-    // Parse user input for all preferences with smart extraction
-    const budgetMatch = userMessage.match(/\$?([\d,]+)/);
-    const daysMatch = userMessage.match(/(\d+)\s*days?/);
-    const monthMatch = userInput.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i);
-    const departureCityMatch = userMessage.match(/from\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+    // Parse user input with robust extraction (prioritized patterns)
     
-    // Extract values or use premium defaults
-    const currentBudget = budgetMatch ? parseInt(budgetMatch[1].replace(/,/g, '')) : 5000;
-    const currentDuration = daysMatch ? parseInt(daysMatch[1]) : 7;
+    // Budget: Try explicit patterns first, then fallback strategies
+    let extractedBudget: number | null = null;
+    
+    // Priority 1: Explicit budget mentions with context
+    const explicitBudgetMatch = userMessage.match(/(?:budget|spend|cost|price)\s*(?:of|around|about|is)?\s*\$?\s*([\d,]+)/i);
+    if (explicitBudgetMatch) {
+      extractedBudget = parseInt(explicitBudgetMatch[1].replace(/,/g, ''));
+    }
+    
+    // Priority 2: Dollar sign followed by numbers
+    if (!extractedBudget) {
+      const dollarMatch = userMessage.match(/\$\s*([\d,]+)/);
+      if (dollarMatch) {
+        extractedBudget = parseInt(dollarMatch[1].replace(/,/g, ''));
+      }
+    }
+    
+    // Priority 3: Find largest reasonable number (≥500)
+    if (!extractedBudget) {
+      const allNumbers = userMessage.match(/\b(\d{3,})\b/g);
+      if (allNumbers) {
+        const nums = allNumbers.map(n => parseInt(n)).filter(n => n >= 500 && n <= 100000);
+        if (nums.length > 0) {
+          extractedBudget = Math.max(...nums);
+        }
+      }
+    }
+    
+    // Validate and constrain budget (500-100000)
+    const currentBudget = extractedBudget && extractedBudget >= 500 && extractedBudget <= 100000 
+      ? extractedBudget 
+      : 5000;
+    
+    // Duration extraction (avoid matching budget numbers)
+    const daysMatch = userMessage.match(/(\d+)\s*(?:day|night)s?/i);
+    const currentDuration = daysMatch ? Math.min(Math.max(parseInt(daysMatch[1]), 1), 30) : 7;
+    
+    // Month and city extraction
+    const monthMatch = userInput.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i);
     const currentMonth = monthMatch ? monthMatch[1].charAt(0).toUpperCase() + monthMatch[1].slice(1) : "June";
+    
+    const departureCityMatch = userMessage.match(/from\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
     const currentDepartureCity = departureCityMatch ? departureCityMatch[1] : "New York";
     
     // Detect interests from input
@@ -56,17 +90,31 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
     const likesRelaxation = /\b(relax|spa|beach|wellness|peaceful|tranquil)\b/i.test(userInput);
     const hasSpecialOccasion = /\b(anniversary|honeymoon|birthday|celebration|wedding)\b/i.test(userInput);
     
+    
     // Immediate AI response with transparency about assumptions
     setTimeout(() => {
-      const isBudgetLuxury = currentBudget > 4000;
+      const isBudgetLuxury = currentBudget >= 8000;
+      const isBudgetMid = currentBudget >= 3000 && currentBudget < 8000;
+      const isBudgetEconomy = currentBudget < 3000;
       const assumptions = [];
       
-      if (!budgetMatch) assumptions.push(`$${currentBudget.toLocaleString()} executive budget`);
+      // Show what we extracted vs defaulted
+      if (!extractedBudget) assumptions.push(`$${currentBudget.toLocaleString()} executive budget`);
       if (!daysMatch) assumptions.push(`${currentDuration}-day journey`);
       if (!monthMatch) assumptions.push(`${currentMonth} departure`);
       if (!departureCityMatch) assumptions.push(`from ${currentDepartureCity}`);
       
-      let aiResponse = `Perfect! ${isBudgetLuxury ? 'Your premium budget opens up extraordinary possibilities.' : 'Great planning!'} ${assumptions.length > 0 ? `Assuming ${assumptions.join(', ')}` : 'I have all the details'}—adjust anytime after results. `;
+      // Budget-aware response
+      let budgetMessage = '';
+      if (extractedBudget) {
+        if (isBudgetLuxury) budgetMessage = `Perfect! With your $${currentBudget.toLocaleString()} luxury budget, I'll curate premium experiences.`;
+        else if (isBudgetMid) budgetMessage = `Excellent! Your $${currentBudget.toLocaleString()} budget opens up wonderful possibilities.`;
+        else budgetMessage = `Smart planning! With $${currentBudget.toLocaleString()}, I'll focus on maximizing value.`;
+      } else {
+        budgetMessage = `Perfect! ${isBudgetLuxury ? 'Your premium budget opens up extraordinary possibilities.' : 'Great planning!'}`;
+      }
+      
+      let aiResponse = `${budgetMessage} ${assumptions.length > 0 ? `Assuming ${assumptions.join(', ')}` : 'I have all the details'}—adjust anytime after results. `;
       
       if (hasSpecialOccasion) aiResponse += "I'll prioritize romantic experiences. ";
       if (likesAdventure) aiResponse += "Including adventure activities. ";
