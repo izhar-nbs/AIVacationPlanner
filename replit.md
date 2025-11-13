@@ -8,13 +8,25 @@ This project is an enterprise-grade demo application showcasing AI agent orchest
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+### November 13, 2025
+-   **Dynamic Budget System**: Implemented real-time budget calculation based on actual user selections (flights, hotels, activities) rather than static mock data.
+    -   Created `client/src/lib/budget-calculator.ts` utility with `calculateBudgetFromSelections()` function.
+    -   Lifted budget state management to `VacationPlanner` component with controlled component pattern.
+    -   Budget updates instantly when users select different flights or hotels without re-running agent simulation.
+    -   BudgetTracker now displays live-calculated budget breakdown with 5 categories: Flights, Accommodations, Experiences, Dining, Transport.
+-   **Text Overflow Fixes**: Applied `line-clamp` and `truncate` CSS classes across multi-agent dashboard and results cards to prevent layout issues with long text.
+-   **Selection Handlers**: Implemented `handleFlightSelection` and `handleHotelSelection` that immediately recalculate budget using new selections (avoiding async state issues).
+-   **E2E Testing**: Verified dynamic budget updates correctly ($5,725 → $5,375 → $6,075) when changing selections.
+
 ## System Architecture
 
 ### Frontend
 - **Framework**: React with TypeScript, utilizing Wouter for SPA routing.
 - **UI Components**: Shadcn UI (New York style) built on Radix UI primitives, styled with Tailwind CSS for a consistent design system.
 - **Animation**: Framer Motion is used for all animations, including phase transitions, real-time agent progress, budget tracking, and success states.
-- **State Management**: Local React state with hooks; agent simulation state managed via a singleton `AgentSimulation` class.
+- **State Management**: Local React state with hooks; agent simulation state managed via a singleton `AgentSimulation` class. Dynamic budget managed via controlled component pattern in VacationPlanner with instant recalculation on selection changes.
 - **Design System**: Tailwind CSS with custom HSL-based color system for light/dark mode, custom elevation utilities, and modern typography.
 
 ### Application Flow
@@ -38,12 +50,13 @@ The application progresses through distinct, state-managed phases:
 -   **Schema Extensions**: `Destination`, `Hotel`, and `Activity` types include optional `coordinates` for map integration.
 
 ### Core Features
+-   **Dynamic Budget Calculator**: Real-time budget computation based on selected flights, hotels, and itinerary activities. Updates instantly without re-running agents. Includes breakdown for Flights, Accommodations, Experiences, Dining, and Transport costs.
 -   **PDF Export**: Client-side PDF generation of the trip plan using `jspdf`.
 -   **Calendar Export**: `.ics` file generation for itinerary activities using `ics`.
 -   **Interactive Map**: Leaflet-based map (`react-leaflet`) displaying destinations, hotels, and activities with interactive markers.
 -   **Enhanced Agent Communication**: A panel displaying real-time, chronological inter-agent messages.
 -   **Comparison View**: A side-by-side comparison of "Current Plan" vs. "New Plan" during refinement, highlighting changes and price differences.
--   **UI/UX**: Features a custom circular progress for agents, professional card designs, gradient message bubbles, and a 3-column layout (suggestions, chat/results, agent dashboard) for a premium travel portal aesthetic.
+-   **UI/UX**: Features a custom circular progress for agents, professional card designs, gradient message bubbles, and a 3-column layout (suggestions, chat/results, agent dashboard) for a premium travel portal aesthetic. Text overflow prevention with line-clamp utilities.
 
 ## External Dependencies
 
