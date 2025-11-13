@@ -115,47 +115,101 @@ export function ResultsPresentation({
   const totalCost = dynamicBudget ? dynamicBudget.allocated : (currentFlight.price + currentHotel.totalPrice);
 
   return (
-    <div className="space-y-8">
-      {/* Section Header */}
+    <div className="space-y-6">
+      {/* DESTINATION HERO - Prominently display selected destination FIRST */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center space-y-4"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative"
       >
-        <div className="space-y-2">
-          <Badge variant="default" className="mb-2">
-            <Check className="w-3 h-3 mr-1" />
-            Plan Complete
-          </Badge>
-          <h2 className="text-3xl font-bold text-foreground">
-            Your Curated Luxury Itinerary
-          </h2>
-          <p className="text-muted-foreground">
-            Bespoke travel experience orchestrated from 500+ premium sources
-          </p>
-        </div>
-        
-        {/* Export Buttons */}
-        <div className="flex items-center justify-center gap-3">
-          <Button
-            variant="outline"
-            onClick={handlePDFExport}
-            data-testid="button-export-pdf"
-            className="gap-2"
-          >
-            <FileText className="w-4 h-4" />
-            Download PDF
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleCalendarExport}
-            data-testid="button-export-calendar"
-            className="gap-2"
-          >
-            <Calendar className="w-4 h-4" />
-            Add to Calendar
-          </Button>
-        </div>
+        <Card className="overflow-hidden border-primary/30 shadow-2xl" data-testid="card-destination-hero">
+          {/* Hero Image */}
+          <div className="relative h-[280px] overflow-hidden">
+            <img
+              src={plan.destination.imageUrl}
+              alt={plan.destination.name}
+              className="w-full h-full object-cover"
+            />
+            {/* Dark gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+            
+            {/* Hero Content Overlay */}
+            <div className="absolute inset-0 flex flex-col justify-between p-6">
+              {/* Top Badge */}
+              <div className="flex justify-between items-start">
+                <Badge variant="default" className="bg-white/95 backdrop-blur-sm text-foreground shadow-lg">
+                  <Check className="w-3 h-3 mr-1" />
+                  Plan Complete
+                </Badge>
+                <Badge className="bg-white/95 backdrop-blur-sm text-foreground text-base px-4 py-2 shadow-lg">
+                  <Star className="w-4 h-4 mr-1.5 fill-primary text-primary" />
+                  <span className="font-bold">{plan.destination.matchScore}</span>
+                  <span className="text-muted-foreground text-sm ml-1">/100 Match</span>
+                </Badge>
+              </div>
+              
+              {/* Destination Title */}
+              <div className="space-y-3">
+                <h2 className="text-4xl font-bold text-white drop-shadow-lg flex items-center gap-3">
+                  <MapPin className="w-8 h-8" />
+                  {plan.destination.name}
+                </h2>
+                <p className="text-white/90 text-lg drop-shadow-md max-w-2xl">
+                  {plan.destination.description}
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="bg-white/95 hover:bg-white backdrop-blur-sm shadow-lg"
+                    data-testid="button-change-destination"
+                  >
+                    Change Destination
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePDFExport}
+                    className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
+                    data-testid="button-export-pdf"
+                  >
+                    <FileText className="w-3 h-3 mr-1" />
+                    PDF
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCalendarExport}
+                    className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
+                    data-testid="button-export-calendar"
+                  >
+                    <Calendar className="w-3 h-3 mr-1" />
+                    Calendar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Why This Destination - Compact */}
+          <CardContent className="p-6 bg-card/50">
+            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Info className="w-4 h-4 text-primary" />
+              Why {plan.destination.name}?
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {plan.destination.reasons.slice(0, 4).map((reason, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-2 text-sm text-muted-foreground"
+                >
+                  <Check className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
+                  <span>{reason}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Selected Trip Summary */}
@@ -238,76 +292,6 @@ export function ResultsPresentation({
         </Card>
       </motion.div>
 
-      {/* Destination Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card className="overflow-hidden shadow-xl border-border/50" data-testid="card-destination">
-          <div className="aspect-video relative overflow-hidden group">
-            <img
-              src={plan.destination.imageUrl}
-              alt={plan.destination.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            {/* Gradient overlay for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-            <div className="absolute top-6 right-6">
-              <Badge className="bg-white/95 backdrop-blur-sm text-foreground text-lg px-5 py-2.5 shadow-lg border border-white/20">
-                <Star className="w-5 h-5 mr-2 fill-primary text-primary" />
-                <span className="font-bold">{plan.destination.matchScore}</span>
-                <span className="text-muted-foreground text-sm ml-1">/100 Match</span>
-              </Badge>
-            </div>
-          </div>
-          <CardContent className="p-8 space-y-6">
-            <div>
-              <h3 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <MapPin className="w-6 h-6 text-primary" />
-                {plan.destination.name}, {plan.destination.country}
-              </h3>
-              <p className="text-muted-foreground mt-2">
-                {plan.destination.description}
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-                <Info className="w-4 h-4 text-primary" />
-                Why this destination?
-              </h4>
-              <ul className="space-y-2">
-                {plan.destination.reasons.map((reason, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start gap-2 text-sm text-muted-foreground"
-                  >
-                    <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>{reason}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {plan.destination.alternatives && (
-              <div>
-                <h4 className="text-sm font-semibold text-foreground mb-2">
-                  Alternative Options
-                </h4>
-                <div className="flex gap-2 flex-wrap">
-                  {plan.destination.alternatives.map((alt, index) => (
-                    <Badge key={index} variant="secondary">
-                      {alt.name} ({alt.matchScore}/100)
-                      {alt.priceDiff > 0 ? ` +$${alt.priceDiff}` : ` -$${Math.abs(alt.priceDiff)}`}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
 
       {/* Flights */}
       <motion.div

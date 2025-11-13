@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, MapPin, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { SuggestionsCarousel } from "@/components/vacation/suggestions-carousel";
 import { ChatInterface } from "@/components/vacation/chat-interface";
 import { MultiAgentDashboard } from "@/components/vacation/multi-agent-dashboard";
@@ -345,7 +346,7 @@ export default function VacationPlanner() {
       {/* Enterprise 2-Column Layout - Compact & Information-Dense */}
       <main className="flex-1 flex overflow-hidden max-w-[1920px] mx-auto w-full">
         {/* Left Column - Chat & Results (~68%) */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gradient-to-b from-background via-background to-muted/5">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gradient-to-b from-background via-background to-muted/5 pb-24">
           {phase === "confirmation" ? (
             <SuccessConfirmation tripPlan={tripPlan} />
           ) : (
@@ -414,6 +415,55 @@ export default function VacationPlanner() {
           </div>
         </div>
       </main>
+
+      {/* Sticky Action Bar - Always visible during results phase */}
+      {phase === "results" && tripPlan && (
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed bottom-0 left-0 right-0 z-50 bg-white/98 dark:bg-gray-900/98 backdrop-blur-md border-t border-border shadow-2xl"
+        >
+          <div className="max-w-[1920px] mx-auto px-6 py-3.5">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{tripPlan.destination.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {dynamicBudget ? `$${dynamicBudget.allocated.toLocaleString()} total trip cost` : 'Calculating...'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {dynamicBudget && (
+                  <Badge 
+                    variant={
+                      dynamicBudget.status === 'under' ? 'default' : 
+                      dynamicBudget.status === 'near' ? 'secondary' : 
+                      'destructive'
+                    }
+                    className="hidden sm:flex"
+                  >
+                    {dynamicBudget.status === 'under' ? 'Under Budget' : 
+                     dynamicBudget.status === 'near' ? 'Near Budget' : 
+                     'Over Budget'}
+                  </Badge>
+                )}
+                <Button
+                  onClick={handleCheckout}
+                  size="lg"
+                  className="font-semibold shadow-lg hover-elevate active-elevate-2"
+                  data-testid="button-sticky-checkout"
+                  disabled={!dynamicBudget}
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Review & Book Trip
+                </Button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Checkout Modal - Only render when dynamicBudget is available */}
       {dynamicBudget && (
