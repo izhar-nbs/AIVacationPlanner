@@ -19,6 +19,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
   const [conversationStep, setConversationStep] = useState(0);
   const [preferences, setPreferences] = useState<Partial<VacationPreferences>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageIdCounter = useRef(0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -158,7 +159,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
       }
       
       const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: `${Date.now()}-${++messageIdCounter.current}`,
         role: "ai",
         content: aiResponse,
         timestamp: new Date(),
@@ -185,7 +186,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
     };
     
     const userMsg: ChatMessage = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${++messageIdCounter.current}`,
       role: "user",
       content: "Coastal retreat, $5,000 investment, 7-day journey for two",
       timestamp: new Date(),
@@ -195,7 +196,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
     
     setTimeout(() => {
       const userMsg2: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: `${Date.now()}-${++messageIdCounter.current}`,
         role: "user",
         content: "June departure from New York, focus on wellness and exceptional gastronomy",
         timestamp: new Date(),
@@ -205,7 +206,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
       
       setTimeout(() => {
         const aiMsg: ChatMessage = {
-          id: (Date.now() + 2).toString(),
+          id: `${Date.now()}-${++messageIdCounter.current}`,
           role: "ai",
           content: "Wonderful! Deploying our travel concierge team now. Watch as five specialized AI agents orchestrate your luxury getaway in real-time!",
           timestamp: new Date(),

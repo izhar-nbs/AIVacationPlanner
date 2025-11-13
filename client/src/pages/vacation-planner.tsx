@@ -87,6 +87,7 @@ export default function VacationPlanner() {
   });
   const [agentMessages, setAgentMessages] = useState<InterAgentMessage[]>([]);
   const simulationRef = useRef<AgentSimulation | null>(null);
+  const messageIdCounter = useRef(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -98,7 +99,7 @@ export default function VacationPlanner() {
 
   const handleSendMessage = (content: string) => {
     const userMessage: ChatMessage = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${++messageIdCounter.current}`,
       role: "user",
       content,
       timestamp: new Date(),
@@ -120,8 +121,13 @@ export default function VacationPlanner() {
       description: "Our 5 specialized AI agents are now analyzing 500+ luxury properties and experiences to curate your perfect getaway.",
     });
 
+    // Ensure simulation is initialized
+    if (!simulationRef.current) {
+      simulationRef.current = new AgentSimulation();
+    }
+
     // Run agent simulation
-    await simulationRef.current?.runSimulation(
+    await simulationRef.current.runSimulation(
       (agentId, update) => {
         setAgents(prev => ({
           ...prev,
@@ -170,8 +176,13 @@ export default function VacationPlanner() {
       description: "Our concierge team is refining your itinerary based on your preferences.",
     });
 
+    // Ensure simulation is initialized
+    if (!simulationRef.current) {
+      simulationRef.current = new AgentSimulation();
+    }
+
     // Run refinement simulation with agents
-    await simulationRef.current?.runSimulation(
+    await simulationRef.current.runSimulation(
       (agentId, update) => {
         setAgents(prev => ({
           ...prev,
