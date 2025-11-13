@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { TripPlan } from "@shared/schema";
+import type { TripPlan, BudgetStatus } from "@shared/schema";
 import { generateTripPDF } from "@/lib/pdf-export";
 import { generateCalendarFile } from "@/lib/calendar-export";
 import { useToast } from "@/hooks/use-toast";
@@ -33,31 +33,41 @@ import { MapView } from "./map-view";
 
 interface ResultsPresentationProps {
   plan: TripPlan;
+  selectedFlightId: string;
+  selectedHotelId: string;
+  onFlightChange: (flightId: string) => void;
+  onHotelChange: (hotelId: string) => void;
+  dynamicBudget: BudgetStatus | null;
 }
 
-export function ResultsPresentation({ plan }: ResultsPresentationProps) {
-  const [selectedFlight, setSelectedFlight] = useState(plan.flights[0]?.id);
-  const [selectedHotel, setSelectedHotel] = useState(plan.hotels[0]?.id);
+export function ResultsPresentation({ 
+  plan, 
+  selectedFlightId,
+  selectedHotelId,
+  onFlightChange,
+  onHotelChange,
+  dynamicBudget
+}: ResultsPresentationProps) {
   const { toast } = useToast();
   
-  const currentFlight = plan.flights.find(f => f.id === selectedFlight) || plan.flights[0];
-  const currentHotel = plan.hotels.find(h => h.id === selectedHotel) || plan.hotels[0];
+  const currentFlight = plan.flights.find(f => f.id === selectedFlightId) || plan.flights[0];
+  const currentHotel = plan.hotels.find(h => h.id === selectedHotelId) || plan.hotels[0];
   
   const handleFlightChange = (flightId: string) => {
-    setSelectedFlight(flightId);
+    onFlightChange(flightId);
     const flight = plan.flights.find(f => f.id === flightId);
     toast({
-      title: "Flight Updated",
-      description: `Switched to ${flight?.airline} - ${flight?.departureTime}`,
+      title: "Flight Selection Updated",
+      description: `Switched to ${flight?.airline} - ${flight?.departureTime}. Budget recalculated automatically.`,
     });
   };
   
   const handleHotelChange = (hotelId: string) => {
-    setSelectedHotel(hotelId);
+    onHotelChange(hotelId);
     const hotel = plan.hotels.find(h => h.id === hotelId);
     toast({
-      title: "Hotel Updated",
-      description: `Switched to ${hotel?.name}`,
+      title: "Hotel Selection Updated",
+      description: `Switched to ${hotel?.name}. Budget recalculated automatically.`,
     });
   };
   
@@ -101,8 +111,8 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
     }
   };
 
-  // Calculate total trip cost
-  const totalCost = currentFlight.price + currentHotel.totalPrice + (plan.budget.breakdown.activities || 0);
+  // Calculate total trip cost from dynamic budget
+  const totalCost = dynamicBudget ? dynamicBudget.allocated : (currentFlight.price + currentHotel.totalPrice);
 
   return (
     <div className="space-y-8">
@@ -170,8 +180,8 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
                   <Plane className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-foreground">{currentFlight.airline}</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="font-semibold text-foreground truncate">{currentFlight.airline}</h4>
+                  <p className="text-sm text-muted-foreground line-clamp-1">
                     {currentFlight.departureTime} • {currentFlight.duration} • {currentFlight.stops === 0 ? 'Direct' : `${currentFlight.stops} stop${currentFlight.stops > 1 ? 's' : ''}`}
                   </p>
                 </div>
@@ -193,8 +203,8 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
                   <HotelIcon className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-foreground">{currentHotel.name}</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="font-semibold text-foreground line-clamp-1">{currentHotel.name}</h4>
+                  <p className="text-sm text-muted-foreground truncate">
                     {currentHotel.stars} stars • ${currentHotel.pricePerNight}/night × 7 nights
                   </p>
                 </div>
@@ -315,7 +325,7 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
             <Card
               key={flight.id}
               className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                selectedFlight === flight.id ? "border-primary border-2 shadow-lg shadow-primary/20" : "shadow-md"
+                selectedFlightId === flight.id ? "border-primary border-2 shadow-lg shadow-primary/20" : "shadow-md"
               } ${flight.recommended ? "ring-2 ring-primary/30" : ""}`}
               onClick={() => handleFlightChange(flight.id)}
               data-testid={`card-flight-${flight.id}`}
@@ -389,7 +399,7 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
             <Card
               key={hotel.id}
               className={`cursor-pointer transition-all hover-elevate overflow-hidden ${
-                selectedHotel === hotel.id ? "border-primary border-2" : ""
+                selectedHotelId === hotel.id ? "border-primary border-2" : ""
               }`}
               onClick={() => handleHotelChange(hotel.id)}
               data-testid={`card-hotel-${hotel.id}`}

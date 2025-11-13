@@ -11,6 +11,7 @@ import { CheckoutModal } from "@/components/vacation/checkout-modal";
 import { SuccessConfirmation } from "@/components/vacation/success-confirmation";
 import { ComparisonView } from "@/components/vacation/comparison-view";
 import { AgentSimulation, simulateRefinement } from "@/lib/agent-simulation";
+import { calculateBudgetFromSelections } from "@/lib/budget-calculator";
 import { useToast } from "@/hooks/use-toast";
 import type { 
   AppPhase, 
@@ -19,7 +20,8 @@ import type {
   TripPlan,
   RefinementRequest,
   Agent,
-  InterAgentMessage 
+  InterAgentMessage,
+  BudgetStatus
 } from "@shared/schema";
 
 export default function VacationPlanner() {
@@ -33,6 +35,9 @@ export default function VacationPlanner() {
   const [showComparison, setShowComparison] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedFlightId, setSelectedFlightId] = useState<string>("");
+  const [selectedHotelId, setSelectedHotelId] = useState<string>("");
+  const [dynamicBudget, setDynamicBudget] = useState<BudgetStatus | null>(null);
   const [agents, setAgents] = useState<Record<string, Agent>>({
     "destination-scout": {
       id: "destination-scout",
@@ -97,6 +102,9 @@ export default function VacationPlanner() {
     };
   }, []);
 
+  // Note: Budget initialization happens synchronously in handleStartPlanning and handleRefinement
+  // Selection changes are handled by handleFlightSelection and handleHotelSelection
+
   const handleSendMessage = (content: string) => {
     const userMessage: ChatMessage = {
       id: `${Date.now()}-${++messageIdCounter.current}`,
@@ -141,6 +149,16 @@ export default function VacationPlanner() {
         setTripPlan(plan);
         setPhase("results");
         setIsProcessing(false);
+        // Initialize selections and budget immediately for new plan
+        const initialFlightId = plan.flights[0]?.id || "";
+        const initialHotelId = plan.hotels[0]?.id || "";
+        setSelectedFlightId(initialFlightId);
+        setSelectedHotelId(initialHotelId);
+        // Calculate initial budget synchronously
+        if (initialFlightId && initialHotelId) {
+          const initialBudget = calculateBudgetFromSelections(plan, initialFlightId, initialHotelId);
+          setDynamicBudget(initialBudget);
+        }
         toast({
           title: "Itinerary Curated!",
           description: `Your bespoke ${plan.destination.name} getaway is ready for review.`,
@@ -199,6 +217,16 @@ export default function VacationPlanner() {
         setPhase("results");
         setShowComparison(true);
         setIsProcessing(false);
+        // Reset selections and budget for refined plan
+        const refinedFlightId = refinedPlan.flights[0]?.id || "";
+        const refinedHotelId = refinedPlan.hotels[0]?.id || "";
+        setSelectedFlightId(refinedFlightId);
+        setSelectedHotelId(refinedHotelId);
+        // Calculate initial budget synchronously
+        if (refinedFlightId && refinedHotelId) {
+          const refinedBudget = calculateBudgetFromSelections(refinedPlan, refinedFlightId, refinedHotelId);
+          setDynamicBudget(refinedBudget);
+        }
         
         toast({
           title: "Itinerary Refined!",
@@ -215,6 +243,24 @@ export default function VacationPlanner() {
   const handlePaymentComplete = () => {
     setShowCheckout(false);
     setPhase("confirmation");
+  };
+
+  const handleFlightSelection = (flightId: string) => {
+    setSelectedFlightId(flightId);
+    // Immediately recalculate budget with new selection
+    if (tripPlan && selectedHotelId) {
+      const updatedBudget = calculateBudgetFromSelections(tripPlan, flightId, selectedHotelId);
+      setDynamicBudget(updatedBudget);
+    }
+  };
+
+  const handleHotelSelection = (hotelId: string) => {
+    setSelectedHotelId(hotelId);
+    // Immediately recalculate budget with new selection
+    if (tripPlan && selectedFlightId) {
+      const updatedBudget = calculateBudgetFromSelections(tripPlan, selectedFlightId, hotelId);
+      setDynamicBudget(updatedBudget);
+    }
   };
 
   const handleSuggestionClick = (prompt: string) => {
@@ -302,7 +348,14 @@ export default function VacationPlanner() {
               {/* Results Presentation */}
               {phase === "results" && tripPlan && !showComparison && (
                 <div className="space-y-6" data-results-section>
-                  <ResultsPresentation plan={tripPlan} />
+                  <ResultsPresentation 
+                    plan={tripPlan} 
+                    selectedFlightId={selectedFlightId}
+                    selectedHotelId={selectedHotelId}
+                    onFlightChange={handleFlightSelection}
+                    onHotelChange={handleHotelSelection}
+                    dynamicBudget={dynamicBudget}
+                  />
                   <RefinementControls
                     onRefine={handleRefinement}
                     onCheckout={handleCheckout}
@@ -316,9 +369,9 @@ export default function VacationPlanner() {
         {/* Right Sidebar - Premium Agent Dashboard */}
         <div className="w-96 flex-shrink-0 hidden xl:flex flex-col border-l border-border bg-white/60 backdrop-blur-lg">
           <div className="p-8 space-y-6 overflow-y-auto flex-1">
-            {/* Budget Tracker */}
-            {tripPlan && (
-              <BudgetTracker budget={tripPlan.budget} />
+            {/* Budget Tracker - Dynamic */}
+            {dynamicBudget && (
+              <BudgetTracker budget={dynamicBudget} />
             )}
 
             {/* Agent Dashboard - Always Visible */}

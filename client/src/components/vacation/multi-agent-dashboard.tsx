@@ -178,13 +178,13 @@ export function MultiAgentDashboard({
                             )}
                           </AnimatePresence>
                           <div className="flex-1 min-w-0">
-                            <span className={`block text-base font-semibold leading-tight ${
+                            <span className={`block text-base font-semibold leading-tight truncate ${
                               isIdle ? "text-muted-foreground" : "text-foreground"
                             }`}>
                               {config.shortName}
                             </span>
                             {isWorking && (
-                              <span className="block text-xs text-muted-foreground mt-1 truncate">
+                              <span className="block text-xs text-muted-foreground mt-1 line-clamp-1">
                                 {agent.currentTask}
                               </span>
                             )}
@@ -216,8 +216,8 @@ export function MultiAgentDashboard({
                             animate={{ opacity: 1 }}
                             className="flex items-center gap-1.5 mt-1.5"
                           >
-                            <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                            <span className="text-xs text-muted-foreground truncate" data-testid={`text-status-${config.id}`}>
+                            <div className="w-1 h-1 rounded-full bg-primary animate-pulse flex-shrink-0" />
+                            <span className="text-xs text-muted-foreground line-clamp-1 flex-1 min-w-0" data-testid={`text-status-${config.id}`}>
                               {agent.currentTask}
                             </span>
                           </motion.div>
