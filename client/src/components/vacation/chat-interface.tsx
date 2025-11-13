@@ -11,15 +11,14 @@ interface ChatInterfaceProps {
   messages: ChatMessage[];
   onSendMessage: (content: string) => void;
   onStartPlanning: (preferences: VacationPreferences) => void;
-  onAddMessage: (message: ChatMessage) => void;
+  onAppendMessage: (role: "user" | "assistant", content: string) => void;
 }
 
-export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddMessage }: ChatInterfaceProps) {
+export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAppendMessage }: ChatInterfaceProps) {
   const [input, setInput] = useState("");
   const [conversationStep, setConversationStep] = useState(0);
   const [preferences, setPreferences] = useState<Partial<VacationPreferences>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messageIdCounter = useRef(0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -122,13 +121,8 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
       
       aiResponse += "Deploying our multi-agent AI team now. Watch 5 specialized agents collaborate in real-time to curate your ideal itinerary in approximately 12 seconds.";
       
-      const aiMessage: ChatMessage = {
-        id: `${Date.now()}-${++messageIdCounter.current}`,
-        role: "ai",
-        content: aiResponse,
-        timestamp: new Date(),
-      };
-      onAddMessage(aiMessage);
+      // Use centralized message creation from parent
+      onAppendMessage("assistant", aiResponse);
       
       // Start planning immediately after a short delay
       setTimeout(() => {
@@ -162,33 +156,18 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
       interests: ["gastronomy", "wellness", "beachfront"],
     };
     
-    const userMsg: ChatMessage = {
-      id: `${Date.now()}-${++messageIdCounter.current}`,
-      role: "user",
-      content: "Coastal retreat, $5,000 investment, 7-day journey for two",
-      timestamp: new Date(),
-    };
-    onAddMessage(userMsg);
-    onSendMessage(userMsg.content);
+    // Use onSendMessage for user messages (which internally calls appendMessage)
+    // Use onAppendMessage only for assistant messages
+    const msg1 = "Coastal retreat, $5,000 investment, 7-day journey for two";
+    onSendMessage(msg1);
     
     setTimeout(() => {
-      const userMsg2: ChatMessage = {
-        id: `${Date.now()}-${++messageIdCounter.current}`,
-        role: "user",
-        content: "June departure from New York, focus on wellness and exceptional gastronomy",
-        timestamp: new Date(),
-      };
-      onAddMessage(userMsg2);
-      onSendMessage(userMsg2.content);
+      const msg2 = "June departure from New York, focus on wellness and exceptional gastronomy";
+      onSendMessage(msg2);
       
       setTimeout(() => {
-        const aiMsg: ChatMessage = {
-          id: `${Date.now()}-${++messageIdCounter.current}`,
-          role: "ai",
-          content: "Wonderful! Deploying our travel concierge team now. Watch as five specialized AI agents orchestrate your luxury getaway in real-time!",
-          timestamp: new Date(),
-        };
-        onAddMessage(aiMsg);
+        const aiResponse = "Wonderful! Deploying our travel concierge team now. Watch as five specialized AI agents orchestrate your luxury getaway in real-time!";
+        onAppendMessage("assistant", aiResponse);
         
         setTimeout(() => {
           onStartPlanning(quickPrefs);
@@ -243,7 +222,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ delay: index * 0.1 }}
                 className={`flex gap-4 ${
-                  message.role === "user" ? "flex-row-reverse" : "flex-row"
+                  message.role === "user" ? "flex-row-reverse" : message.role === "assistant" ? "flex-row" : "flex-row"
                 }`}
                 data-testid={`message-${message.role}-${index}`}
               >
@@ -251,11 +230,15 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
                   className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
                     message.role === "user"
                       ? "bg-gradient-to-br from-primary to-primary/80"
+                      : message.role === "assistant"
+                      ? "bg-gradient-to-br from-accent to-accent/80"
                       : "bg-gradient-to-br from-accent to-accent/80"
                   }`}
                 >
                   {message.role === "user" ? (
                     <User className="w-5 h-5 text-white" />
+                  ) : message.role === "assistant" ? (
+                    <Bot className="w-5 h-5 text-white" />
                   ) : (
                     <Bot className="w-5 h-5 text-white" />
                   )}
@@ -264,11 +247,13 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
                   className={`flex-1 px-5 py-4 rounded-2xl shadow-sm ${
                     message.role === "user"
                       ? "bg-gradient-to-br from-primary to-primary/90 text-white"
+                      : message.role === "assistant"
+                      ? "bg-white border border-border/50"
                       : "bg-white border border-border/50"
                   }`}
                   data-testid={`message-content-${message.role}-${index}`}
                 >
-                  <p className={`text-sm leading-relaxed ${message.role === "ai" ? "text-foreground" : ""}`}>
+                  <p className={`text-sm leading-relaxed ${message.role === "user" ? "text-white" : message.role === "assistant" ? "text-foreground" : "text-foreground"}`}>
                     {message.content}
                   </p>
                 </div>

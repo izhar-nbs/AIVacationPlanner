@@ -15,6 +15,7 @@ import { ComparisonView } from "@/components/vacation/comparison-view";
 import { AgentSimulation, simulateRefinement, type SimulationContext } from "@/lib/agent-simulation";
 import { calculateBudgetFromSelections } from "@/lib/budget-calculator";
 import { resolveDestination, getConfidenceMessage } from "@/lib/destination-resolver";
+import { generateDynamicAIResponse } from "@/lib/dynamic-response-generator";
 import { useToast } from "@/hooks/use-toast";
 import type { 
   AppPhase, 
@@ -107,18 +108,20 @@ export default function VacationPlanner() {
   // Note: Budget initialization happens synchronously in handleStartPlanning and handleRefinement
   // Selection changes are handled by handleFlightSelection and handleHotelSelection
 
-  const handleSendMessage = (content: string) => {
-    const userMessage: ChatMessage = {
-      id: `${Date.now()}-${++messageIdCounter.current}`,
-      role: "user",
+  // SINGLE SOURCE OF TRUTH for message creation - all messages flow through here
+  // Uses monotonic counter to guarantee unique, sequential IDs with zero collision risk
+  const appendMessage = (role: "user" | "assistant", content: string) => {
+    const message: ChatMessage = {
+      id: `${++messageIdCounter.current}`, // Purely monotonic - no Date.now() collisions
+      role,
       content,
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => [...prev, message]);
   };
 
-  const handleAddMessage = (message: ChatMessage) => {
-    setMessages(prev => [...prev, message]);
+  const handleSendMessage = (content: string) => {
+    appendMessage("user", content);
   };
 
   const handleStartPlanning = async (prefs: VacationPreferences) => {
@@ -130,8 +133,14 @@ export default function VacationPlanner() {
     };
     
     setPreferences(enrichedPrefs);
+    
+    // Set processing state FIRST, then add AI response for correct UI flow
     setPhase("processing");
     setIsProcessing(true);
+    
+    // Generate dynamic AI response using single source of truth
+    const dynamicResponse = generateDynamicAIResponse(enrichedPrefs);
+    appendMessage("assistant", dynamicResponse);
     
     const confidenceMsg = getConfidenceMessage(resolved.confidence, resolved.destination.name);
     
@@ -355,7 +364,7 @@ export default function VacationPlanner() {
                 messages={messages}
                 onSendMessage={handleSendMessage}
                 onStartPlanning={handleStartPlanning}
-                onAddMessage={handleAddMessage}
+                onAppendMessage={appendMessage}
               />
 
               {/* Comparison View (after refinement) */}
