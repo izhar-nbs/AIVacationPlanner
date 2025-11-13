@@ -26,7 +26,7 @@ const agentSequences = {
     { progress: 55, task: "Comparing 45 destinations...", delay: 2000 },
     { progress: 75, task: "Evaluating match scores...", delay: 1600 },
     { progress: 90, task: "Ranking top 3 options...", delay: 1200 },
-    { progress: 100, task: "Top 3 destinations found ✓", delay: 800, result: "Cancún (96/100)" },
+    { progress: 100, task: "Top 3 destinations found ✓", delay: 800, result: "Perfect match (96/100)" },
   ],
   "flight-optimizer": [
     { progress: 10, task: "Searching JFK flights...", delay: 800 },
@@ -72,13 +72,13 @@ const interAgentMessages: Array<{ from: string; to: string; message: string; del
   { 
     from: "Destination Scout", 
     to: "Accommodation Finder", 
-    message: "Focus on beachfront properties in Cancún", 
+    message: "Focus on beachfront and luxury properties", 
     delay: 4800 
   },
   { 
     from: "Flight Optimizer", 
     to: "Itinerary Architect", 
-    message: "Arrival at 12:15 PM on June 15", 
+    message: "Flight arrival scheduled for early afternoon", 
     delay: 7200 
   },
   { 

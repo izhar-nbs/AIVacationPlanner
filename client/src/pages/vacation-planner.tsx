@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { SuggestionsSidebar } from "@/components/vacation/suggestions-sidebar";
+import { Button } from "@/components/ui/button";
+import { SuggestionsCarousel } from "@/components/vacation/suggestions-carousel";
 import { ChatInterface } from "@/components/vacation/chat-interface";
 import { MultiAgentDashboard } from "@/components/vacation/multi-agent-dashboard";
 import { BudgetTracker } from "@/components/vacation/budget-tracker";
@@ -294,45 +295,57 @@ export default function VacationPlanner() {
     <div className="h-screen flex flex-col bg-background">
       {/* Modern Premium Header */}
       <header className="border-b border-border bg-white/80 backdrop-blur-md sticky top-0 z-50 flex-shrink-0 shadow-sm">
-        <div className="max-w-[2000px] mx-auto px-8 py-5">
+        <div className="max-w-[1800px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
-                <Sparkles className="w-7 h-7 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">NorthBay</span>
-                  <span className="text-muted-foreground font-medium text-lg">AI Travel</span>
+                  <span className="text-muted-foreground font-medium text-base">AI Travel</span>
                 </h1>
-                <p className="text-sm text-muted-foreground font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                   Multi-Agent Vacation Planning
                 </p>
               </div>
             </div>
-            {isProcessing && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20"
-              >
-                <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
-                <span className="font-semibold text-primary text-sm">AI Agents Working</span>
-              </motion.div>
-            )}
+            <div className="flex items-center gap-4">
+              {isProcessing && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20"
+                >
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
+                  <span className="font-semibold text-primary text-xs">AI Working</span>
+                </motion.div>
+              )}
+              {phase === "results" && tripPlan && (
+                <Button
+                  onClick={handleCheckout}
+                  size="sm"
+                  className="font-semibold shadow-lg hover-elevate active-elevate-2"
+                  data-testid="button-header-checkout"
+                >
+                  View Your Trip
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Modern 3-Column Layout with Better Spacing */}
-      <main className="flex-1 flex overflow-hidden max-w-[2000px] mx-auto w-full">
-        {/* Left Sidebar - Suggestions */}
-        <div className="w-80 flex-shrink-0 hidden lg:block border-r border-border bg-sidebar/30">
-          <SuggestionsSidebar onSelectSuggestion={handleSuggestionClick} />
-        </div>
+      {/* Suggestions Carousel - Below Header */}
+      {phase === "input" && (
+        <SuggestionsCarousel onSelectSuggestion={handleSuggestionClick} />
+      )}
 
-        {/* Center Column - Chat & Results */}
-        <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-gradient-to-b from-background to-muted/20">
+      {/* Modern 2-Column Layout (65/35 Split) */}
+      <main className="flex-1 flex overflow-hidden max-w-[1800px] mx-auto w-full">
+        {/* Left Column - Chat & Results (65%) */}
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6 bg-gradient-to-b from-background to-muted/10">
           {phase === "confirmation" ? (
             <SuccessConfirmation tripPlan={tripPlan} />
           ) : (
@@ -349,13 +362,14 @@ export default function VacationPlanner() {
                 <div className="space-y-6">
                   <ComparisonView oldPlan={previousPlan} newPlan={tripPlan} />
                   <div className="flex justify-center">
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setShowComparison(false)}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                       data-testid="button-hide-comparison"
                     >
                       View full plan details →
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -381,9 +395,9 @@ export default function VacationPlanner() {
           )}
         </div>
 
-        {/* Right Sidebar - Premium Agent Dashboard */}
-        <div className="w-96 flex-shrink-0 hidden xl:flex flex-col border-l border-border bg-white/60 backdrop-blur-lg">
-          <div className="p-8 space-y-6 overflow-y-auto flex-1">
+        {/* Right Column - Sticky Agent Dashboard (35%) */}
+        <div className="w-[35%] flex-shrink-0 hidden lg:flex flex-col border-l border-border bg-gradient-to-b from-white/80 to-muted/30 backdrop-blur-sm">
+          <div className="sticky top-0 h-screen overflow-y-auto p-6 space-y-5">
             {/* Budget Tracker - Dynamic */}
             {dynamicBudget && (
               <BudgetTracker budget={dynamicBudget} />
