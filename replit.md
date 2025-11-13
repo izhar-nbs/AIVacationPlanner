@@ -10,7 +10,34 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### November 13, 2025 - Budget-Responsive System (Latest)
+### November 13, 2025 - Type Safety & UX Polish (Latest)
+-   **Schema Alignment**: Updated ChatMessage.role from `"user" | "ai"` to `"user" | "assistant"` for industry standard compliance.
+    -   Aligns with OpenAI-style role naming across entire codebase.
+    -   Eliminates all TypeScript comparison errors between "ai" and "assistant".
+    -   All runtime code was already using "assistant" - only schema needed update.
+-   **Destination Display Fix**: Corrected destination extraction in dynamic response generator.
+    -   Now properly extracts `.name` from Destination object instead of showing "some destination".
+    -   Fallback chain: `destination.name` → `preferences.description` → `'your destination'`.
+    -   Fixed type error where Destination object was treated as string.
+-   **Removed Hardcoded Month Fallback**: Eliminated "June" default in chat interface.
+    -   Month extraction now returns `undefined` when not explicitly mentioned by user.
+    -   Added guard in assumptions: only shows month if detected AND defined.
+    -   Prevents "undefined departure" from appearing in AI responses.
+-   **Message ID System**: Single source of truth via centralized `appendMessage` function.
+    -   Purely monotonic counter prevents ID collisions (no Date.now() timestamps).
+    -   Fixed QuickStart double-append bug causing duplicate messages.
+-   **Destination Hero Section**: Prominent display at top of results phase.
+    -   Hero image, match score, destination description, "Why this destination?" reasoning.
+    -   "Change Destination" button placeholder (implementation pending).
+-   **Sticky Action Bar**: Always-visible CTA button in results phase.
+    -   Fixed bottom positioning with destination name, total cost, budget status.
+    -   "Review & Book Trip" button never requires scrolling.
+-   **Dynamic AI Responses**: Modular template pools eliminate repetition.
+    -   Phrase banks keyed by budget tier, duration, destination, month.
+    -   Anti-repetition logic with 10 destination-specific templates + generic fallback.
+    -   Executive-grade language varies by context (no hardcoded endings).
+
+### November 13, 2025 - Budget-Responsive System
 -   **Layered Budget Extraction**: Multi-pattern regex with validation for robust budget parsing.
     -   Explicit patterns ($5,000 | $5000 | 5000), dollar signs, and fallback to largest number ≥$500.
     -   Validates range $500-$100,000 with comprehensive console logging for debugging.
