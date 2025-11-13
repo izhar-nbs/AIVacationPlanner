@@ -33,130 +33,46 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
     e.preventDefault();
     if (!input.trim()) return;
 
+    // Save input before clearing
+    const userMessage = input;
     const userInput = input.toLowerCase();
-    onSendMessage(input);
+    onSendMessage(userMessage);
     setInput("");
     
-    // Parse user input for preferences
-    const budgetMatch = input.match(/\$?([\d,]+)/);
-    const daysMatch = input.match(/(\d+)\s*days?/);
-    
-    // Check what information we have so far
-    const hasDestinationType = userInput.includes("beach") || userInput.includes("mountain") || 
-                               userInput.includes("city") || userInput.includes("tropical");
-    const hasBudget = budgetMatch || preferences.budget;
-    const hasDuration = daysMatch || preferences.duration;
-    const hasMonth = preferences.month || /\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(userInput);
-    const hasDepartureCity = preferences.departureCity || userInput.includes("from ");
-    
-    // Update preferences based on current input
-    if (budgetMatch && !preferences.budget) {
-      setPreferences(prev => ({ ...prev, budget: parseInt(budgetMatch[1].replace(/,/g, '')) }));
-    }
-    if (daysMatch && !preferences.duration) {
-      setPreferences(prev => ({ ...prev, duration: parseInt(daysMatch[1]) }));
-    }
-    
-    // Extract and persist month
+    // Parse user input for all preferences with smart extraction
+    const budgetMatch = userMessage.match(/\$?([\d,]+)/);
+    const daysMatch = userMessage.match(/(\d+)\s*days?/);
     const monthMatch = userInput.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i);
-    if (monthMatch && !preferences.month) {
-      const month = monthMatch[1].charAt(0).toUpperCase() + monthMatch[1].slice(1);
-      setPreferences(prev => ({ ...prev, month }));
-    }
+    const departureCityMatch = userMessage.match(/from\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
     
-    // Extract and persist departure city
-    const departureCityMatch = input.match(/from\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
-    if (departureCityMatch && !preferences.departureCity) {
-      setPreferences(prev => ({ ...prev, departureCity: departureCityMatch[1] }));
-    }
+    // Extract values or use premium defaults
+    const currentBudget = budgetMatch ? parseInt(budgetMatch[1].replace(/,/g, '')) : 5000;
+    const currentDuration = daysMatch ? parseInt(daysMatch[1]) : 7;
+    const currentMonth = monthMatch ? monthMatch[1].charAt(0).toUpperCase() + monthMatch[1].slice(1) : "June";
+    const currentDepartureCity = departureCityMatch ? departureCityMatch[1] : "New York";
     
-    // Detect user preferences for interests
+    // Detect interests from input
     const likesAdventure = /\b(adventure|hiking|diving|explore|active)\b/i.test(userInput);
     const likesRelaxation = /\b(relax|spa|beach|wellness|peaceful|tranquil)\b/i.test(userInput);
+    const hasSpecialOccasion = /\b(anniversary|honeymoon|birthday|celebration|wedding)\b/i.test(userInput);
     
-    // Persist interests based on detected preferences
-    if ((likesAdventure || likesRelaxation) && !preferences.interests) {
-      const interests = likesAdventure ? ["adventure", "exploration"] : ["wellness", "gastronomy"];
-      setPreferences(prev => ({ ...prev, interests }));
-    }
-    
-    // Always respond with intelligent, context-aware AI message
+    // Immediate AI response with transparency about assumptions
     setTimeout(() => {
-      let aiResponse = "";
+      const isBudgetLuxury = currentBudget > 4000;
+      const assumptions = [];
       
-      // Use freshly parsed values instead of async state
-      const currentBudget = budgetMatch ? parseInt(budgetMatch[1].replace(/,/g, '')) : preferences.budget;
-      const currentDuration = daysMatch ? parseInt(daysMatch[1]) : preferences.duration;
-      const currentMonth = monthMatch ? monthMatch[1].charAt(0).toUpperCase() + monthMatch[1].slice(1) : preferences.month;
+      if (!budgetMatch) assumptions.push(`$${currentBudget.toLocaleString()} executive budget`);
+      if (!daysMatch) assumptions.push(`${currentDuration}-day journey`);
+      if (!monthMatch) assumptions.push(`${currentMonth} departure`);
+      if (!departureCityMatch) assumptions.push(`from ${currentDepartureCity}`);
       
-      // Check for contextual cues in current message (not async state)
-      const currentMonthDetected = /\b(june|july|august|september)\b/i.test(userInput);
-      const isJuneSeptember = monthMatch && currentMonthDetected;
-      const isBudgetLuxury = budgetMatch && currentBudget && currentBudget > 4000;
-      const isBudgetValue = budgetMatch && currentBudget && currentBudget < 3000;
-      const currentHasSpecialOccasion = /\b(anniversary|honeymoon|birthday|celebration|wedding)\b/i.test(userInput);
+      let aiResponse = `Perfect! ${isBudgetLuxury ? 'Your premium budget opens up extraordinary possibilities.' : 'Great planning!'} ${assumptions.length > 0 ? `Assuming ${assumptions.join(', ')}` : 'I have all the details'}—adjust anytime after results. `;
       
-      if (conversationStep === 0) {
-        // First message - intelligent contextual response
-        if (hasDestinationType && hasBudget && hasDuration) {
-          // Smart follow-up based on what we know
-          if (isBudgetLuxury) {
-            aiResponse = `Excellent! A ${currentDuration}-day ${hasDestinationType ? 'retreat' : 'journey'} with a ${formatBudget(currentBudget)} budget opens up premium possibilities. ${isJuneSeptember ? 'June-September is perfect for tropical destinations - would you prefer Caribbean or Mediterranean?' : 'What month are you planning to travel?'} Also, which city will you be departing from?`;
-          } else if (isBudgetValue) {
-            aiResponse = `Smart planning! A ${currentDuration}-day trip with a ${formatBudget(currentBudget)} budget means I'll focus on maximizing value. ${isJuneSeptember ? 'Traveling in summer? Great timing for deals!' : 'What month works best for you?'} And your departure city?`;
-          } else {
-            aiResponse = "Wonderful! To perfect your itinerary, what month are you planning to travel? And which city will you be departing from?";
-          }
-          setConversationStep(1);
-        } else if (hasDestinationType || hasBudget || hasDuration) {
-          if (hasBudget && isBudgetLuxury) {
-            aiResponse = `I love your ${formatBudget(currentBudget)} budget - that opens up some extraordinary experiences! To curate the perfect journey, how many days are you planning? And what type of destination excites you most - beachfront paradise, cultural immersion, or mountain retreat?`;
-          } else if (hasDestinationType) {
-            aiResponse = "Great start! To craft your ideal itinerary, I'll need your budget range and trip duration. Also, are you celebrating anything special, or is this pure relaxation?";
-          } else {
-            aiResponse = "Great start! To create your perfect journey, I'll need a few more details. Could you share your budget range, trip duration (in days), and what type of destination appeals to you (beach, mountains, city, etc.)?";
-          }
-        } else {
-          aiResponse = "I'm excited to help plan your journey! Tell me about your ideal trip: What's your budget? How many days? What kind of destination interests you?";
-        }
-      } else if (conversationStep === 1) {
-        // Second message - intelligent context-based questions
-        if (hasBudget && hasDuration && (hasMonth || hasDepartureCity)) {
-          // Final smart question before deploying agents
-          let insights = [];
-          if (currentHasSpecialOccasion) insights.push("I'll prioritize romantic experiences");
-          if (likesAdventure) insights.push("including adventure activities");
-          if (likesRelaxation) insights.push("with wellness and spa options");
-          
-          aiResponse = `Perfect! ${insights.length > 0 ? insights.join(' ') + '. ' : ''}I'm now deploying our multi-agent AI team. Watch in real-time as 5 specialized agents collaborate to curate your ideal itinerary in approximately 12 seconds.`;
-          setConversationStep(2);
-          
-          // Start planning after a short delay
-          setTimeout(() => {
-            onStartPlanning({
-              description: `${hasDestinationType ? 'Coastal retreat' : 'Curated journey'} for discerning travelers`,
-              budget: currentBudget || 5000,
-              duration: currentDuration || 7,
-              travelers: 2,
-              departureCity: preferences.departureCity || "New York",
-              month: currentMonth || "June",
-              interests: likesAdventure ? ["adventure", "exploration"] : likesRelaxation ? ["wellness", "gastronomy"] : ["gastronomy", "wellness"],
-            });
-          }, 1500);
-        } else if (hasBudget && hasDuration) {
-          // Smart contextual question
-          if (isJuneSeptember) {
-            aiResponse = `Great! Traveling in ${currentMonth || 'summer'} - I recommend avoiding hurricane-prone Caribbean islands. Would you prefer Mediterranean coastlines or Pacific destinations? Also, your departure city?`;
-          } else {
-            aiResponse = "Excellent details! Just need the departure month and your home city. Also, quick question - do you prefer direct flights or are you open to connections if it means better rates?";
-          }
-        } else {
-          aiResponse = "Excellent details! Just need the departure month and your home city, then we can start orchestrating your perfect getaway.";
-        }
-      } else {
-        // Conversation step 2+ - always be helpful
-        aiResponse = "I'm still working on your itinerary. Our AI agents are analyzing hundreds of options. Your personalized travel plan will be ready shortly!";
-      }
+      if (hasSpecialOccasion) aiResponse += "I'll prioritize romantic experiences. ";
+      if (likesAdventure) aiResponse += "Including adventure activities. ";
+      if (likesRelaxation) aiResponse += "With wellness and spa options. ";
+      
+      aiResponse += "Deploying our multi-agent AI team now. Watch 5 specialized agents collaborate in real-time to curate your ideal itinerary in approximately 12 seconds.";
       
       const aiMessage: ChatMessage = {
         id: `${Date.now()}-${++messageIdCounter.current}`,
@@ -165,6 +81,19 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
         timestamp: new Date(),
       };
       onAddMessage(aiMessage);
+      
+      // Start planning immediately after a short delay
+      setTimeout(() => {
+        onStartPlanning({
+          description: userMessage,
+          budget: currentBudget,
+          duration: currentDuration,
+          travelers: 2,
+          departureCity: currentDepartureCity,
+          month: currentMonth,
+          interests: likesAdventure ? ["adventure", "exploration"] : likesRelaxation ? ["wellness", "gastronomy"] : ["gastronomy", "wellness"],
+        });
+      }, 1500);
     }, 800);
   };
 

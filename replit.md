@@ -10,7 +10,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### November 13, 2025 - Enterprise Transformation
+### November 13, 2025 - Demo-Ready Enterprise Transformation
 -   **Professional Typography System**: Migrated to Inter font family with refined hierarchy for enterprise readability.
     -   Compact font sizes: base/sm/xs for information density, uppercase tracking for data labels.
     -   Professional typeface stack with system font fallbacks for global compatibility.
@@ -30,9 +30,16 @@ Preferred communication style: Simple, everyday language.
     -   Right panel: w-[35%] p-6 space-y-5 → w-[32%] p-4 space-y-3.5 (tighter density).
     -   Max width: 1800px → 1920px for better screen utilization.
     -   Suggestions carousel: py-4 gap-3 → py-2.5 gap-2, compact template buttons.
+-   **Instant Planning Flow**: Single-message demo experience for executive presentations.
+    -   User types ONE message (e.g., "Plan a vacation to Paris") → agents deploy immediately.
+    -   Smart extraction: parses budget ($5,000), duration (7 days), month, departure city from natural language.
+    -   Premium defaults: fills missing details transparently ($5,000 executive budget, 7-day journey, June departure, from New York).
+    -   NO follow-up questions — proceeds directly to multi-agent orchestration in ~12 seconds.
+    -   Transparent AI response shows assumptions: "Assuming $5,000 executive budget, 7-day journey... adjust anytime after results."
 -   **Dynamic Budget System**: Real-time calculation based on actual user selections.
     -   Budget updates instantly when users select different flights or hotels.
     -   BudgetTracker displays live-calculated breakdown with 5 categories.
+    -   Checkout button disabled until valid budget exists, modal uses live dynamicBudget state.
 -   **Dynamic Destination System**: Fully dynamic destination handling with fuzzy matching.
     -   Created `destination-resolver.ts` with trigram similarity for intelligent extraction.
     -   Destinations, flights, hotels all reflect user input (Paris → Paris results, Bali → Bali results).
