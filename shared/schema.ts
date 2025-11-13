@@ -3,7 +3,7 @@ import { z } from "zod";
 // Chat Message Types
 export interface ChatMessage {
   id: string;
-  role: "user" | "ai";
+  role: "user" | "assistant";
   content: string;
   timestamp: Date;
 }

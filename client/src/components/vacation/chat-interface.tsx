@@ -79,7 +79,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAppe
     
     // Month and city extraction
     const monthMatch = userInput.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i);
-    const currentMonth = monthMatch ? monthMatch[1].charAt(0).toUpperCase() + monthMatch[1].slice(1) : "June";
+    const currentMonth = monthMatch ? monthMatch[1].charAt(0).toUpperCase() + monthMatch[1].slice(1) : undefined;
     
     const departureCityMatch = userMessage.match(/from\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
     const currentDepartureCity = departureCityMatch ? departureCityMatch[1] : "New York";
@@ -100,7 +100,7 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAppe
       // Show what we extracted vs defaulted
       if (!extractedBudget) assumptions.push(`$${currentBudget.toLocaleString()} executive budget`);
       if (!daysMatch) assumptions.push(`${currentDuration}-day journey`);
-      if (!monthMatch) assumptions.push(`${currentMonth} departure`);
+      if (!monthMatch && currentMonth) assumptions.push(`${currentMonth} departure`);
       if (!departureCityMatch) assumptions.push(`from ${currentDepartureCity}`);
       
       // Budget-aware response

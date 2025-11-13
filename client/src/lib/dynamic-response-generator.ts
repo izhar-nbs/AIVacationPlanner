@@ -155,8 +155,13 @@ function getDurationCategory(days: number): 'short' | 'medium' | 'long' {
 }
 
 export function generateDynamicAIResponse(preferences: VacationPreferences): string {
+  // Extract destination name from Destination object or use description fallback
+  const destinationName = preferences.destination 
+    ? (typeof preferences.destination === 'string' ? preferences.destination : preferences.destination.name)
+    : preferences.description || 'your destination';
+    
   const context: ResponseContext = {
-    destination: preferences.destination || 'your selected destination',
+    destination: destinationName,
     budgetTier: determineBudgetTier(preferences.budget || 5000),
     duration: preferences.duration || 7,
     month: preferences.month,
