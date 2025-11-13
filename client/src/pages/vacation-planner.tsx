@@ -220,21 +220,21 @@ export default function VacationPlanner() {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50 flex-shrink-0">
-        <div className="px-6 py-4">
+      {/* Modern Premium Header */}
+      <header className="border-b border-border bg-white/80 backdrop-blur-md sticky top-0 z-50 flex-shrink-0 shadow-sm">
+        <div className="max-w-[2000px] mx-auto px-8 py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-primary-foreground" />
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+                <Sparkles className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                  <span className="text-primary">NorthBay</span>
-                  <span className="text-muted-foreground font-normal text-base">Solutions</span>
+                <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">NorthBay</span>
+                  <span className="text-muted-foreground font-medium text-lg">AI Travel</span>
                 </h1>
-                <p className="text-xs text-muted-foreground">
-                  AI Multi-Agent Travel Planner Demo
+                <p className="text-sm text-muted-foreground font-medium">
+                  Multi-Agent Vacation Planning
                 </p>
               </div>
             </div>
@@ -242,25 +242,25 @@ export default function VacationPlanner() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-2 text-sm"
+                className="flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20"
               >
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="font-medium text-primary">Agents Active</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
+                <span className="font-semibold text-primary text-sm">AI Agents Working</span>
               </motion.div>
             )}
           </div>
         </div>
       </header>
 
-      {/* 3-Column Layout */}
-      <main className="flex-1 flex overflow-hidden">
+      {/* Modern 3-Column Layout with Better Spacing */}
+      <main className="flex-1 flex overflow-hidden max-w-[2000px] mx-auto w-full">
         {/* Left Sidebar - Suggestions */}
-        <div className="w-80 flex-shrink-0 hidden lg:block">
+        <div className="w-80 flex-shrink-0 hidden lg:block border-r border-border bg-sidebar/30">
           <SuggestionsSidebar onSelectSuggestion={handleSuggestionClick} />
         </div>
 
         {/* Center Column - Chat & Results */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-gradient-to-b from-background to-muted/20">
           {phase === "confirmation" ? (
             <SuccessConfirmation tripPlan={tripPlan} />
           ) : (
@@ -302,9 +302,9 @@ export default function VacationPlanner() {
           )}
         </div>
 
-        {/* Right Sidebar - Agents (Always Visible) */}
-        <div className="w-96 flex-shrink-0 hidden xl:flex flex-col border-l border-border bg-card/50">
-          <div className="p-6 space-y-4 overflow-y-auto flex-1">
+        {/* Right Sidebar - Premium Agent Dashboard */}
+        <div className="w-96 flex-shrink-0 hidden xl:flex flex-col border-l border-border bg-white/60 backdrop-blur-lg">
+          <div className="p-8 space-y-6 overflow-y-auto flex-1">
             {/* Budget Tracker */}
             {tripPlan && (
               <BudgetTracker budget={tripPlan.budget} />

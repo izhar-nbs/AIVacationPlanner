@@ -253,9 +253,9 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
         </div>
       </motion.div>
 
-      {/* Chat Messages */}
+      {/* Modern Chat Messages */}
       {messages.length > 0 && (
-        <Card className="p-6 max-h-96 overflow-y-auto space-y-4">
+        <Card className="p-8 max-h-96 overflow-y-auto space-y-6 shadow-lg border-border/50">
           <AnimatePresence>
             {messages.map((message, index) => (
               <motion.div
@@ -264,33 +264,35 @@ export function ChatInterface({ messages, onSendMessage, onStartPlanning, onAddM
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ delay: index * 0.1 }}
-                className={`flex gap-3 ${
+                className={`flex gap-4 ${
                   message.role === "user" ? "flex-row-reverse" : "flex-row"
                 }`}
                 data-testid={`message-${message.role}-${index}`}
               >
                 <div
-                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                  className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
                     message.role === "user"
-                      ? "bg-primary/10"
-                      : "bg-accent/50"
+                      ? "bg-gradient-to-br from-primary to-primary/80"
+                      : "bg-gradient-to-br from-accent to-accent/80"
                   }`}
                 >
                   {message.role === "user" ? (
-                    <User className="w-4 h-4 text-primary" />
+                    <User className="w-5 h-5 text-white" />
                   ) : (
-                    <Bot className="w-4 h-4 text-accent-foreground" />
+                    <Bot className="w-5 h-5 text-white" />
                   )}
                 </div>
                 <div
-                  className={`flex-1 px-4 py-3 rounded-lg ${
+                  className={`flex-1 px-5 py-4 rounded-2xl shadow-sm ${
                     message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      ? "bg-gradient-to-br from-primary to-primary/90 text-white"
+                      : "bg-white border border-border/50"
                   }`}
                   data-testid={`message-content-${message.role}-${index}`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  <p className={`text-sm leading-relaxed ${message.role === "ai" ? "text-foreground" : ""}`}>
+                    {message.content}
+                  </p>
                 </div>
               </motion.div>
             ))}

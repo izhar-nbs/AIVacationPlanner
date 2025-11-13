@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE */
+/* LIGHT MODE - Modern Travel Portal Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -11,83 +11,83 @@
   --opaque-button-border-intensity: -8; /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  --elevate-1: rgba(0,0,0, .02);
+  --elevate-2: rgba(0,0,0, .06);
 
-  --background: 0 0% 100%;
+  --background: 210 20% 98%;
 
-  --foreground: 220 15% 15%;
+  --foreground: 215 25% 12%;
 
-  --border: 220 10% 88%;
+  --border: 210 15% 90%;
 
-  --card: 220 5% 98%;
+  --card: 0 0% 100%;
 
-  --card-foreground: 220 15% 15%;
+  --card-foreground: 215 25% 12%;
 
-  --card-border: 220 10% 92%;
+  --card-border: 210 12% 94%;
 
-  --sidebar: 220 5% 96%;
+  --sidebar: 210 18% 97%;
 
-  --sidebar-foreground: 220 15% 15%;
+  --sidebar-foreground: 215 25% 12%;
 
-  --sidebar-border: 220 10% 90%;
+  --sidebar-border: 210 15% 92%;
 
-  --sidebar-primary: 210 90% 50%;
+  --sidebar-primary: 200 95% 48%;
 
-  --sidebar-primary-foreground: 210 90% 98%;
+  --sidebar-primary-foreground: 0 0% 100%;
 
-  --sidebar-accent: 220 8% 92%;
+  --sidebar-accent: 210 20% 94%;
 
-  --sidebar-accent-foreground: 220 15% 20%;
+  --sidebar-accent-foreground: 215 25% 15%;
 
-  --sidebar-ring: 210 90% 50%;
+  --sidebar-ring: 200 95% 48%;
 
-  --popover: 220 8% 94%;
+  --popover: 0 0% 100%;
 
-  --popover-foreground: 220 15% 15%;
+  --popover-foreground: 215 25% 12%;
 
-  --popover-border: 220 10% 88%;
+  --popover-border: 210 12% 92%;
 
-  --primary: 210 100% 50%;
+  --primary: 200 95% 48%;
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 210 15% 35%;
+  --secondary: 190 80% 45%;
 
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 210 20% 94%;
+  --muted: 210 18% 96%;
 
-  --muted-foreground: 210 10% 45%;
+  --muted-foreground: 215 12% 45%;
 
-  --accent: 25 95% 55%;
+  --accent: 28 90% 58%;
 
-  --accent-foreground: 25 20% 15%;
+  --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 75% 45%;
+  --destructive: 0 85% 50%;
 
-  --destructive-foreground: 0 75% 98%;
+  --destructive-foreground: 0 0% 100%;
 
-  --input: 220 15% 60%;
-  --ring: 210 100% 50%;
-  --chart-1: 210 100% 50%;
-  --chart-2: 165 75% 40%;
-  --chart-3: 280 70% 50%;
-  --chart-4: 25 95% 55%;
-  --chart-5: 340 75% 50%;
+  --input: 210 15% 65%;
+  --ring: 200 95% 48%;
+  --chart-1: 200 95% 48%;
+  --chart-2: 190 80% 45%;
+  --chart-3: 28 90% 58%;
+  --chart-4: 340 80% 55%;
+  --chart-5: 165 70% 45%;
 
-  --font-sans: Open Sans, sans-serif;
+  --font-sans: Inter, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
-  --radius: .5rem; /* 8px */
-  --shadow-2xs: 0px 2px 0px 0px hsl(220 10% 10% / 0.02);
-  --shadow-xs: 0px 2px 0px 0px hsl(220 10% 10% / 0.04);
-  --shadow-sm: 0px 2px 0px 0px hsl(220 10% 10% / 0.04), 0px 1px 2px -1px hsl(220 10% 10% / 0.06);
-  --shadow: 0px 2px 0px 0px hsl(220 10% 10% / 0.04), 0px 1px 2px -1px hsl(220 10% 10% / 0.06);
-  --shadow-md: 0px 2px 0px 0px hsl(220 10% 10% / 0.04), 0px 2px 4px -1px hsl(220 10% 10% / 0.08);
-  --shadow-lg: 0px 2px 0px 0px hsl(220 10% 10% / 0.04), 0px 4px 6px -1px hsl(220 10% 10% / 0.10);
-  --shadow-xl: 0px 2px 0px 0px hsl(220 10% 10% / 0.04), 0px 8px 10px -1px hsl(220 10% 10% / 0.12);
-  --shadow-2xl: 0px 2px 0px 0px hsl(220 10% 10% / 0.08);
+  --radius: .75rem; /* 12px - more modern */
+  --shadow-2xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+  --shadow-xs: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0px 2px 4px -1px rgba(0, 0, 0, 0.06), 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0px 6px 12px -2px rgba(0, 0, 0, 0.08), 0px 3px 7px -3px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0px 10px 20px -5px rgba(0, 0, 0, 0.1), 0px 4px 10px -3px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0px 20px 30px -10px rgba(0, 0, 0, 0.15), 0px 10px 20px -5px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
