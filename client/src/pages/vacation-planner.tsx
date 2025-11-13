@@ -12,10 +12,13 @@ import { RefinementControls } from "@/components/vacation/refinement-controls";
 import { CheckoutModal } from "@/components/vacation/checkout-modal";
 import { SuccessConfirmation } from "@/components/vacation/success-confirmation";
 import { ComparisonView } from "@/components/vacation/comparison-view";
+import { ExecutiveSummary } from "@/components/vacation/executive-summary";
 import { AgentSimulation, simulateRefinement, type SimulationContext } from "@/lib/agent-simulation";
 import { calculateBudgetFromSelections } from "@/lib/budget-calculator";
 import { resolveDestination, getConfidenceMessage } from "@/lib/destination-resolver";
 import { generateDynamicAIResponse } from "@/lib/dynamic-response-generator";
+import { destinations } from "@/lib/mock-data";
+import { analytics } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
 import type { 
   AppPhase, 
@@ -42,6 +45,8 @@ export default function VacationPlanner() {
   const [selectedFlightId, setSelectedFlightId] = useState<string>("");
   const [selectedHotelId, setSelectedHotelId] = useState<string>("");
   const [dynamicBudget, setDynamicBudget] = useState<BudgetStatus | null>(null);
+  const [processingStartTime, setProcessingStartTime] = useState<number>(0);
+  const [processingTime, setProcessingTime] = useState<number>(0);
   const [agents, setAgents] = useState<Record<string, Agent>>({
     "destination-scout": {
       id: "destination-scout",
@@ -122,6 +127,47 @@ export default function VacationPlanner() {
 
   const handleSendMessage = (content: string) => {
     appendMessage("user", content);
+    
+    // If we're in results phase, check if user wants to change destination
+    if (phase === "results" && tripPlan) {
+      const lowerContent = content.toLowerCase();
+      
+      // Detect destination change requests
+      const changePatterns = [
+        /change.*destination.*to\s+([a-z\s]+)/i,
+        /switch.*to\s+([a-z\s]+)/i,
+        /try\s+([a-z\s]+)\s+instead/i,
+        /what about\s+([a-z\s]+)/i,
+        /show me\s+([a-z\s]+)/i,
+        /plan.*for\s+([a-z\s]+)/i,
+      ];
+      
+      for (const pattern of changePatterns) {
+        const match = content.match(pattern);
+        if (match && match[1]) {
+          const requestedDestination = match[1].trim();
+          // Check if it matches any of our destinations
+          const matchedDest = destinations.find(d => 
+            d.name.toLowerCase().includes(requestedDestination.toLowerCase()) ||
+            requestedDestination.toLowerCase().includes(d.name.toLowerCase())
+          );
+          
+          if (matchedDest) {
+            handleDestinationChange(matchedDest.name);
+            return;
+          }
+        }
+      }
+      
+      // Also check for direct destination mentions
+      for (const dest of destinations) {
+        if (lowerContent.includes(dest.name.toLowerCase())) {
+          appendMessage("assistant", `Great choice! Let me reconfigure your journey to ${dest.name}.`);
+          setTimeout(() => handleDestinationChange(dest.name), 500);
+          return;
+        }
+      }
+    }
   };
 
   const handleStartPlanning = async (prefs: VacationPreferences) => {
@@ -132,15 +178,23 @@ export default function VacationPlanner() {
       destination: resolved.destination,
     };
     
+    // Track vacation request
+    analytics.trackVacationRequest(enrichedPrefs);
+    
     setPreferences(enrichedPrefs);
     
     // Set processing state FIRST, then add AI response for correct UI flow
     setPhase("processing");
     setIsProcessing(true);
+    setProcessingStartTime(Date.now()); // Track start time for metrics
     
-    // Generate dynamic AI response using single source of truth
-    const dynamicResponse = generateDynamicAIResponse(enrichedPrefs);
-    appendMessage("assistant", dynamicResponse);
+    // Generate dynamic AI response using single source of truth (async with LLM)
+    generateDynamicAIResponse(enrichedPrefs).then(dynamicResponse => {
+      appendMessage("assistant", dynamicResponse);
+    }).catch(error => {
+      console.error('Failed to generate AI response:', error);
+      appendMessage("assistant", `Perfect! Planning your ${enrichedPrefs.duration || 7}-day journey to ${enrichedPrefs.destination?.name}. Our AI team is now curating your perfect itinerary!`);
+    });
     
     const confidenceMsg = getConfidenceMessage(resolved.confidence, resolved.destination.name);
     
@@ -173,9 +227,13 @@ export default function VacationPlanner() {
         setTripPlan(plan);
         setPhase("results");
         setIsProcessing(false);
+        // Calculate processing time for metrics
+        const endTime = Date.now();
+        const totalTime = Math.floor((endTime - processingStartTime) / 1000); // in seconds
+        setProcessingTime(totalTime);
         // Initialize selections with recommended options based on budget tier (or fallback to first)
         const recommendedFlight = plan.flights.find(f => f.recommended) || plan.flights[0];
-        const recommendedHotel = plan.hotels.find(h => h.recommended) || plan.hotels[0];
+        const recommendedHotel = plan.hotels[0]; // First hotel is typically the best match
         const initialFlightId = recommendedFlight?.id || "";
         const initialHotelId = recommendedHotel?.id || "";
         setSelectedFlightId(initialFlightId);
@@ -187,6 +245,83 @@ export default function VacationPlanner() {
         toast({
           title: "Itinerary Curated!",
           description: `Your bespoke ${plan.destination.name} getaway is ready for review.`,
+        });
+      }
+    );
+  };
+
+  const handleDestinationChange = async (newDestinationName: string) => {
+    if (!tripPlan) return;
+    
+    // Store current plan as previous for comparison
+    setPreviousPlan(tripPlan);
+    setIsProcessing(true);
+    setPhase("refinement");
+    
+    // Add AI message about destination change
+    appendMessage("assistant", `Excellent choice! Reconfiguring your journey to ${newDestinationName}. Our concierge team is now curating a bespoke experience for this destination.`);
+    
+    // Resolve the new destination
+    const resolved = resolveDestination("", newDestinationName);
+    const updatedPrefs = {
+      ...preferences,
+      destination: resolved.destination,
+    };
+    setPreferences(updatedPrefs);
+    
+    // Reset agents to analyzing state
+    setAgents(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(agentId => {
+        updated[agentId] = {
+          ...updated[agentId],
+          status: "working",
+          progress: 0,
+          currentTask: "Recalibrating for new destination..."
+        };
+      });
+      return updated;
+    });
+    
+    toast({
+      title: "Destination Updated",
+      description: `Reconfiguring your journey to ${newDestinationName}. Watch our agents adapt in real-time.`,
+    });
+
+    // Create new simulation context with new destination
+    const context: SimulationContext = {
+      destination: resolved.destination,
+      preferences: updatedPrefs,
+    };
+    simulationRef.current = new AgentSimulation(context);
+
+    // Run simulation with new destination
+    await simulationRef.current.runSimulation(
+      (agentId, update) => {
+        setAgents(prev => ({
+          ...prev,
+          [agentId]: { ...prev[agentId], ...update } as Agent,
+        }));
+      },
+      (message) => {
+        setAgentMessages(prev => [...prev, message]);
+      },
+      (plan) => {
+        setTripPlan(plan);
+        setPhase("results");
+        setShowComparison(true);
+        setIsProcessing(false);
+        // Reset selections and budget for new destination
+        const newFlightId = plan.flights[0]?.id || "";
+        const newHotelId = plan.hotels[0]?.id || "";
+        setSelectedFlightId(newFlightId);
+        setSelectedHotelId(newHotelId);
+        const newBudget = calculateBudgetFromSelections(plan, newFlightId, newHotelId, updatedPrefs);
+        setDynamicBudget(newBudget);
+        
+        toast({
+          title: "Journey Reconfigured!",
+          description: `Your ${newDestinationName} experience is ready. Compare with your previous selection.`,
         });
       }
     );
@@ -384,6 +519,15 @@ export default function VacationPlanner() {
                 </div>
               )}
 
+              {/* Executive Summary - C-Suite Overview */}
+              {phase === "results" && tripPlan && dynamicBudget && !showComparison && (
+                <ExecutiveSummary 
+                  tripPlan={tripPlan}
+                  budget={dynamicBudget}
+                  processingTime={processingTime}
+                />
+              )}
+
               {/* Results Presentation */}
               {phase === "results" && tripPlan && !showComparison && (
                 <div className="space-y-6" data-results-section>
@@ -393,6 +537,7 @@ export default function VacationPlanner() {
                     selectedHotelId={selectedHotelId}
                     onFlightChange={handleFlightSelection}
                     onHotelChange={handleHotelSelection}
+                    onDestinationChange={handleDestinationChange}
                     dynamicBudget={dynamicBudget}
                   />
                   <RefinementControls

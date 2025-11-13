@@ -30,6 +30,14 @@ import { generateTripPDF } from "@/lib/pdf-export";
 import { generateCalendarFile } from "@/lib/calendar-export";
 import { useToast } from "@/hooks/use-toast";
 import { MapView } from "./map-view";
+import { destinations } from "@/lib/mock-data";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ResultsPresentationProps {
   plan: TripPlan;
@@ -37,6 +45,7 @@ interface ResultsPresentationProps {
   selectedHotelId: string;
   onFlightChange: (flightId: string) => void;
   onHotelChange: (hotelId: string) => void;
+  onDestinationChange: (destinationName: string) => void;
   dynamicBudget: BudgetStatus | null;
 }
 
@@ -46,6 +55,7 @@ export function ResultsPresentation({
   selectedHotelId,
   onFlightChange,
   onHotelChange,
+  onDestinationChange,
   dynamicBudget
 }: ResultsPresentationProps) {
   const { toast } = useToast();
@@ -157,15 +167,33 @@ export function ResultsPresentation({
                 <p className="text-white/90 text-lg drop-shadow-md max-w-2xl">
                   {plan.destination.description}
                 </p>
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="bg-white/95 hover:bg-white backdrop-blur-sm shadow-lg"
-                    data-testid="button-change-destination"
+                <div className="flex gap-2 flex-wrap items-center">
+                  <Select
+                    value={plan.destination.name}
+                    onValueChange={onDestinationChange}
                   >
-                    Change Destination
-                  </Button>
+                    <SelectTrigger 
+                      className="w-[220px] bg-white/95 hover:bg-white backdrop-blur-sm shadow-lg border-none h-9"
+                      data-testid="select-destination"
+                    >
+                      <MapPin className="w-4 h-4 mr-2 text-primary" />
+                      <SelectValue placeholder="Change destination" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {destinations.map((dest) => (
+                        <SelectItem 
+                          key={dest.id} 
+                          value={dest.name}
+                          data-testid={`destination-option-${dest.id}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{dest.name}</span>
+                            <span className="text-xs text-muted-foreground">({dest.country})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Button
                     variant="outline"
                     size="sm"

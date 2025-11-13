@@ -120,6 +120,7 @@ function createAdHocDestination(name: string): Destination {
 
 /**
  * Main resolver function - extracts destination from user message
+ * Now uses intelligent fallback instead of always defaulting to Cancún
  */
 export function resolveDestination(message: string, explicitDestination?: string): ResolvedDestination {
   // Priority 1: Use explicit destination if provided
@@ -142,40 +143,83 @@ export function resolveDestination(message: string, explicitDestination?: string
   // Priority 2: Extract from natural language message
   const keywords = extractDestinationKeywords(message);
   
+  // Priority 3: Intelligent fallback based on message content
   if (keywords.length === 0) {
-    // Fallback to first curated destination
+    // Analyze message for destination hints
+    const lowerMessage = message.toLowerCase();
+    
+    // Beach/tropical keywords
+    if (lowerMessage.match(/beach|tropical|island|caribbean|ocean|sea|coast/)) {
+      const beachDests = destinations.filter(d => 
+        d.description.toLowerCase().includes('beach') || 
+        d.climate.toLowerCase().includes('tropical')
+      );
+      if (beachDests.length > 0) {
+        return {
+          destination: beachDests[Math.floor(Math.random() * beachDests.length)],
+          confidence: "medium",
+        };
+      }
+    }
+    
+    // Cultural/historical keywords
+    if (lowerMessage.match(/culture|history|art|museum|ancient|heritage/)) {
+      const culturalDests = destinations.filter(d => 
+        d.description.toLowerCase().includes('culture') || 
+        d.description.toLowerCase().includes('heritage')
+      );
+      if (culturalDests.length > 0) {
+        return {
+          destination: culturalDests[Math.floor(Math.random() * culturalDests.length)],
+          confidence: "medium",
+        };
+      }
+    }
+    
+    // Adventure keywords
+    if (lowerMessage.match(/adventure|hiking|mountain|nature|outdoor/)) {
+      // Return a random destination instead of always Cancún
+      const randomIndex = Math.floor(Math.random() * destinations.length);
+      return {
+        destination: destinations[randomIndex],
+        confidence: "low",
+      };
+    }
+    
+    // Default: Return random destination instead of always Cancún
+    const randomIndex = Math.floor(Math.random() * destinations.length);
     return {
-      destination: destinations[0],
+      destination: destinations[randomIndex],
       confidence: "low",
     };
   }
   
   // Find best match from extracted keywords
-  let bestOverall: { destination: Destination; score: number; keyword: string } = {
-    destination: destinations[0],
-    score: 0,
-    keyword: keywords[0]
-  };
+  let bestOverall: { destination: Destination; score: number; keyword: string } | null = null;
   
-  keywords.forEach(keyword => {
+  for (const keyword of keywords) {
     const match = findBestMatch(keyword);
-    if (match && match.score > bestOverall.score) {
-      bestOverall = { destination: match.destination, score: match.score, keyword };
+    if (match) {
+      if (!bestOverall || match.score > bestOverall.score) {
+        bestOverall = { destination: match.destination, score: match.score, keyword };
+      }
     }
-  });
+  }
   
-  if (bestOverall.score > 0.85) {
-    return {
-      destination: bestOverall.destination,
-      confidence: "high",
-      matchedKeyword: bestOverall.keyword,
-    };
-  } else if (bestOverall.score > 0.7) {
-    return {
-      destination: bestOverall.destination,
-      confidence: "medium",
-      matchedKeyword: bestOverall.keyword,
-    };
+  if (bestOverall) {
+    if (bestOverall.score > 0.85) {
+      return {
+        destination: bestOverall.destination,
+        confidence: "high",
+        matchedKeyword: bestOverall.keyword,
+      };
+    } else if (bestOverall.score > 0.7) {
+      return {
+        destination: bestOverall.destination,
+        confidence: "medium",
+        matchedKeyword: bestOverall.keyword,
+      };
+    }
   }
   
   // Last resort: Create ad-hoc destination from first keyword

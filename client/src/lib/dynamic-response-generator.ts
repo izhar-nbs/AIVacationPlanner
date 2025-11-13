@@ -1,4 +1,5 @@
 import { VacationPreferences } from "@shared/schema";
+import { llmService } from "./llm-service";
 
 interface ResponseContext {
   destination: string;
@@ -154,8 +155,77 @@ function getDurationCategory(days: number): 'short' | 'medium' | 'long' {
   return 'long';
 }
 
-export function generateDynamicAIResponse(preferences: VacationPreferences): string {
+/**
+ * Generate dynamic AI response - tries LLM first, falls back to templates
+ */
+export async function generateDynamicAIResponse(preferences: VacationPreferences): Promise<string> {
   // Extract destination name from Destination object or use description fallback
+  const destinationName = preferences.destination 
+    ? (typeof preferences.destination === 'string' ? preferences.destination : preferences.destination.name)
+    : preferences.description || 'your destination';
+    
+  // Try LLM first if available
+  if (llmService.isAvailable() && preferences.destination) {
+    try {
+      const response = await llmService.generateResponse(
+        preferences,
+        typeof preferences.destination === 'string' 
+          ? { name: preferences.destination, country: '', id: '', imageUrl: '', matchScore: 0, description: '', climate: '', bestMonth: '', coordinates: { lat: 0, lng: 0 }, reasons: [] }
+          : preferences.destination
+      );
+      return response;
+    } catch (error) {
+      console.warn('LLM response generation failed, using template:', error);
+    }
+  }
+  
+  // Fallback to template-based generation
+  const context: ResponseContext = {
+    destination: destinationName,
+    budgetTier: determineBudgetTier(preferences.budget || 5000),
+    duration: preferences.duration || 7,
+    month: preferences.month,
+    departureCity: preferences.departureCity,
+  };
+
+  const parts: string[] = [];
+
+  // 1. Opening line (tier-specific) - now dynamic based on actual destination
+  const introTemplate = selectVariant(INTRO_TEMPLATES[context.budgetTier], `intro-${context.budgetTier}`);
+  parts.push(introTemplate.replace('{destination}', context.destination));
+
+  // 2. Duration insight - dynamic based on actual duration
+  const durationCategory = getDurationCategory(context.duration);
+  const durationInsight = selectVariant(DURATION_INSIGHTS[durationCategory], `duration-${durationCategory}`);
+  parts.push(durationInsight.replace('{duration}', context.duration.toString()));
+
+  // 3. Destination-specific insight - now truly dynamic
+  const destinationPool = DESTINATION_INSIGHTS[context.destination] || [
+    `${context.destination} offers unique experiences perfectly tailored to your interests and preferences.`,
+    `Discover the authentic charm and unforgettable moments that ${context.destination} has to offer.`,
+  ];
+  parts.push(selectVariant(destinationPool, `destination-${context.destination}`));
+
+  // 4. Timing note (if month provided) - dynamic based on actual month
+  if (context.month && TIMING_NOTES[context.month]) {
+    parts.push(selectVariant(TIMING_NOTES[context.month], `timing-${context.month}`));
+  } else if (context.month) {
+    parts.push(`${context.month} provides excellent conditions for your journey to ${context.destination}.`);
+  }
+
+  // 5. Closing (tier-specific) - dynamic based on budget
+  parts.push(selectVariant(CLOSING_TEMPLATES[context.budgetTier], `closing-${context.budgetTier}`));
+
+  // 6. Final CTA - always dynamic
+  parts.push("Our AI concierge team is now working to curate your perfect itinerary. Watch their progress in real-time!");
+
+  return parts.join(' ');
+}
+
+/**
+ * Synchronous version for backward compatibility
+ */
+export function generateDynamicAIResponseSync(preferences: VacationPreferences): string {
   const destinationName = preferences.destination 
     ? (typeof preferences.destination === 'string' ? preferences.destination : preferences.destination.name)
     : preferences.description || 'your destination';
@@ -169,32 +239,24 @@ export function generateDynamicAIResponse(preferences: VacationPreferences): str
   };
 
   const parts: string[] = [];
-
-  // 1. Opening line (tier-specific)
   const introTemplate = selectVariant(INTRO_TEMPLATES[context.budgetTier], `intro-${context.budgetTier}`);
   parts.push(introTemplate.replace('{destination}', context.destination));
 
-  // 2. Duration insight
   const durationCategory = getDurationCategory(context.duration);
   const durationInsight = selectVariant(DURATION_INSIGHTS[durationCategory], `duration-${durationCategory}`);
   parts.push(durationInsight.replace('{duration}', context.duration.toString()));
 
-  // 3. Destination-specific insight (fallback to generic if not found)
   const destinationPool = DESTINATION_INSIGHTS[context.destination] || [
-    `This destination offers unique experiences tailored to your interests.`,
+    `${context.destination} offers unique experiences perfectly tailored to your interests.`,
   ];
   parts.push(selectVariant(destinationPool, `destination-${context.destination}`));
 
-  // 4. Timing note (if month provided)
   if (context.month && TIMING_NOTES[context.month]) {
     parts.push(selectVariant(TIMING_NOTES[context.month], `timing-${context.month}`));
   }
 
-  // 5. Closing (tier-specific)
   parts.push(selectVariant(CLOSING_TEMPLATES[context.budgetTier], `closing-${context.budgetTier}`));
-
-  // 6. Final CTA
-  parts.push("Review your comprehensive plan below, and feel free to request any adjustments.");
+  parts.push("Our AI concierge team is now curating your perfect itinerary!");
 
   return parts.join(' ');
 }
