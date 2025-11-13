@@ -39,6 +39,35 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
   const [selectedFlight, setSelectedFlight] = useState(plan.flights[0]?.id);
   const [selectedHotel, setSelectedHotel] = useState(plan.hotels[0]?.id);
   const { toast } = useToast();
+  
+  const currentFlight = plan.flights.find(f => f.id === selectedFlight) || plan.flights[0];
+  const currentHotel = plan.hotels.find(h => h.id === selectedHotel) || plan.hotels[0];
+  
+  const handleFlightChange = (flightId: string) => {
+    setSelectedFlight(flightId);
+    const flight = plan.flights.find(f => f.id === flightId);
+    toast({
+      title: "Flight Updated",
+      description: `Switched to ${flight?.airline} - ${flight?.departureTime}`,
+    });
+  };
+  
+  const handleHotelChange = (hotelId: string) => {
+    setSelectedHotel(hotelId);
+    const hotel = plan.hotels.find(h => h.id === hotelId);
+    toast({
+      title: "Hotel Updated",
+      description: `Switched to ${hotel?.name}`,
+    });
+  };
+  
+  const scrollToFlights = () => {
+    document.querySelector('[data-flights-section]')?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  const scrollToHotels = () => {
+    document.querySelector('[data-hotels-section]')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handlePDFExport = () => {
     try {
@@ -71,6 +100,9 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
       });
     }
   };
+
+  // Calculate total trip cost
+  const totalCost = currentFlight.price + currentHotel.totalPrice + (plan.budget.breakdown.activities || 0);
 
   return (
     <div className="space-y-8">
@@ -114,6 +146,86 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
             Add to Calendar
           </Button>
         </div>
+      </motion.div>
+
+      {/* Selected Trip Summary */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.05 }}
+      >
+        <Card className="border-primary/30 bg-primary/5" data-testid="card-trip-summary">
+          <CardHeader className="pb-4">
+            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Check className="w-5 h-5 text-primary" />
+              Your Selected Trip
+            </h3>
+            <p className="text-sm text-muted-foreground">Click any option below to change your selection</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Selected Flight */}
+            <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-card border hover-elevate cursor-pointer" onClick={scrollToFlights}>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Plane className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-foreground">{currentFlight.airline}</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {currentFlight.departureTime} • {currentFlight.duration} • {currentFlight.stops === 0 ? 'Direct' : `${currentFlight.stops} stop${currentFlight.stops > 1 ? 's' : ''}`}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right flex items-center gap-3">
+                <div>
+                  <div className="text-lg font-bold text-foreground">${currentFlight.price.toLocaleString()}</div>
+                  <Button variant="ghost" size="sm" className="h-auto py-1 px-2 text-xs" data-testid="button-change-flight">
+                    Change Flight
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Selected Hotel */}
+            <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-card border hover-elevate cursor-pointer" onClick={scrollToHotels}>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <HotelIcon className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-foreground">{currentHotel.name}</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {currentHotel.stars} stars • ${currentHotel.pricePerNight}/night × 7 nights
+                  </p>
+                </div>
+              </div>
+              <div className="text-right flex items-center gap-3">
+                <div>
+                  <div className="text-lg font-bold text-foreground">${currentHotel.totalPrice.toLocaleString()}</div>
+                  <Button variant="ghost" size="sm" className="h-auto py-1 px-2 text-xs" data-testid="button-change-hotel">
+                    Change Hotel
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Price */}
+            <div className="pt-4 border-t flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Trip Cost</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Flights + 7 nights + Activities
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-primary">${totalCost.toLocaleString()}</div>
+                <Badge variant={totalCost <= (plan.budget.budget || 5000) ? "default" : "destructive"} className="mt-1">
+                  {totalCost <= (plan.budget.budget || 5000) ? 'Within Budget' : 'Over Budget'}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Destination Card */}
@@ -189,6 +301,7 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
+        data-flights-section
       >
         <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
           <Plane className="w-5 h-5 text-primary" />
@@ -201,7 +314,7 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
               className={`cursor-pointer transition-all hover-elevate ${
                 selectedFlight === flight.id ? "border-primary border-2" : ""
               } ${flight.recommended ? "ring-2 ring-primary/20" : ""}`}
-              onClick={() => setSelectedFlight(flight.id)}
+              onClick={() => handleFlightChange(flight.id)}
               data-testid={`card-flight-${flight.id}`}
             >
               <CardHeader className="pb-3">
@@ -258,6 +371,7 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
+        data-hotels-section
       >
         <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
           <HotelIcon className="w-5 h-5 text-primary" />
@@ -270,7 +384,7 @@ export function ResultsPresentation({ plan }: ResultsPresentationProps) {
               className={`cursor-pointer transition-all hover-elevate overflow-hidden ${
                 selectedHotel === hotel.id ? "border-primary border-2" : ""
               }`}
-              onClick={() => setSelectedHotel(hotel.id)}
+              onClick={() => handleHotelChange(hotel.id)}
               data-testid={`card-hotel-${hotel.id}`}
             >
               <div className="aspect-video relative overflow-hidden">
