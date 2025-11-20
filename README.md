@@ -38,9 +38,36 @@ npm run dev
 ## 📚 Documentation
 
 - **[Getting Started](./docs/GETTING_STARTED.md)** - Setup & installation
+- **[AWS Deployment](./docs/AWS_DEPLOYMENT.md)** - Deploy to AWS with IaC
+- **[CI/CD Pipeline](./docs/AWS_CICD_PIPELINE.md)** - GitHub Actions automation
 - **[Code Structure](./docs/CODE_STRUCTURE.md)** - Project organization
 - **[Design Patterns](./docs/DESIGN_PATTERNS.md)** - Patterns used
 - **[Code Review Guide](./docs/CODE_REVIEW_GUIDE.md)** - For reviewers
+
+---
+
+## ☁️ AWS Deployment
+
+Deploy to production with Infrastructure as Code:
+
+```bash
+# Quick deployment
+npm run cdk:deploy
+
+# Or use the automated script
+./scripts/deploy-aws.ps1  # Windows
+./scripts/deploy-aws.sh   # Linux/Mac
+```
+
+**What gets deployed:**
+- ✅ ECS Fargate containers for backend
+- ✅ RDS PostgreSQL database
+- ✅ S3 + CloudFront for frontend
+- ✅ Application Load Balancer
+- ✅ Secrets Manager for API keys
+- ✅ Full VPC with security groups
+
+See **[AWS Deployment Guide](./docs/AWS_DEPLOYMENT.md)** for details.
 
 ---
 

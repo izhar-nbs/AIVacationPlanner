@@ -4,3 +4,14 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# CDK
+cdk.out
+.cdk.staging
+cdk.context.json
+
+# AWS
+.aws-sam
+
+# Environment
+.env.production
